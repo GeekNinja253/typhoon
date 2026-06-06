@@ -1,0 +1,103 @@
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/README.md b/README.md[m
+[1mindex c6f5419..55f5643 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,25 +1,35 @@[m
+[31m-# typhoon-system[m
+[31m-启动方法：[m
+[31m-方法一：使用一键启动脚本（推荐） 您只需要在电脑上打开项目文件夹 c:\Users\astra\Desktop\typhoon-project，然后双击运行 start.bat 文件。 它会自动弹出两个黑色的命令行窗口：[m
+[32m+[m[32m# 台风路径分析系统 (Typhoon Tracking System)[m
+ [m
+[31m-一个会自动激活虚拟环境并启动 Python 的后端预测模型接口（端口 8000）。[m
+[31m-另一个会自动启动 Vue3 的前端三维地球界面（端口 5173 或 5174）。[m
+[31m-启动完成后，您可以直接在浏览器访问： http://localhost:5174 （如果被占用可能是 5173，请查看弹出的命令行窗口的提示）。[m
+[32m+[m[32m本项目包含三个主要部分：Vue 前端展示、Java 业务后端、Python 算法端。由于加入了完整的历史预测数据存储功能，启动流程需确保三个端均正常运行。[m
+ [m
+[31m-方法二：手动输入命令启动 如果您想在终端（例如 VS Code 终端）手动运行，可以分别执行以下命令：[m
+[32m+[m[32m---[m
+ [m
+[31m-启动后端（预测接口）： 打开一个终端，执行：[m
+[32m+[m[32m## 🚀 启动指南 (最新必读)[m
+ [m
+[31m-powershell[m
+[32m+[m[32m为了确保预测记录能成功保存到数据库中，请务必按照以下三个步骤依次启动项目：[m
+ [m
+[32m+[m[32m### 第一步：准备 MySQL 数据库[m
+[32m+[m[32m1. 确保您的电脑上已安装并启动 **MySQL** 数据库服务。[m
+[32m+[m[32m2. 使用 Navicat 等可视化工具连接到本地 MySQL（账号密码默认配为 `root`/`root`）。[m
+[32m+[m[32m3. 新建一个名为 `typhoon_db` 的数据库。[m
+[32m+[m[32m4. 将 `typhoon-backend/src/main/resources/sql/typhoon.sql` 中的 SQL 脚本在 `typhoon_db` 数据库中执行，以完成数据表（如 `prediction_task` 等）的创建。[m
+ [m
+[31m-cd c:\Users\astra\Desktop\typhoon-project\typhoon-ml[m
+[31m-.\venv\Scripts\activate[m
+[31m-python api.py[m
+[31m-启动前端（三维地球）： 再打开一个新的终端，执行：[m
+[32m+[m[32m### 第二步：启动 Java 后端（核心存储协调服务）[m
+[32m+[m[32m由于 Java 代码在开发过程中经常变动，建议直接使用 IDE（推荐 **IntelliJ IDEA**）进行启动，这样不仅能保证运行的是最新代码，还能直观地查看报错信息。[m
+[32m+[m[32m1. 打开 IntelliJ IDEA，选择打开项目中的 `typhoon-backend` 文件夹。[m
+[32m+[m[32m2. 在左侧项目目录中找到 `src/main/java/com/typhoon/TyphoonBackendApplication.java`。[m
+[32m+[m[32m3. 点击行号旁的绿色箭头 **(Run)** 启动项目。[m
+[32m+[m[32m4. 观察下方的控制台输出，如果没有红色的数据库连接报错，且最后显示 `Started TyphoonBackendApplication`，说明后端的 8080 端口启动成功。[m
+ [m
+[31m-powershell[m
+[32m+[m[32m> *补充说明：如果您非要用 `start.bat` 命令启动 Java，请务必提前在 IDEA 右侧的 Maven 面板中，依次双击运行 `clean` 和 `package`，重新生成最新的 `.jar` 文件。*[m
+ [m
+[32m+[m[32m### 第三步：一键启动前端和算法端[m
+[32m+[m[32m当 Java 后端在 IDEA 里平稳运行后，您可以进行最后一步：[m
+[32m+[m[32m1. 在项目根目录（即当前文件夹）双击运行 **`start.bat`** 文件。[m
+[32m+[m[32m2. 脚本会提示一些注意事项，按回车后它会帮您唤起黑色的命令行窗口：[m
+[32m+[m[32m   - **Python ML API 窗口**：自动激活虚拟环境并启动算法模型服务（端口 8000）。[m
+[32m+[m[32m   - **Vue Frontend 窗口**：自动编译并启动三维地球界面（端口 5173 或 5174）。[m
+[32m+[m[32m   - **Java Backend 窗口**：*(注：由于您已经在 IDEA 里启动了 Java，如果您看到这个多余的窗口，可以直接把它关掉 X 掉)*[m
+ [m
+[31m-cd c:\Users\astra\Desktop\typhoon-project\typhoon-frontend[m
+[31m-npm run dev[m
+\ No newline at end of file[m
+[32m+[m[32m### 最终访问[m
+[32m+[m[32m等待终端出现 `Local: http://localhost:5173/` 字样后，直接在浏览器中打开该地址即可开始体验渲染轨迹与查询历史记录！[m
+\ No newline at end of file[m
+[1mdiff --git a/start.bat b/start.bat[m
+[1mdeleted file mode 100644[m
+[1mindex c72ed42..0000000[m
+[1m--- a/start.bat[m
+[1m+++ /dev/null[m
+[36m@@ -1,13 +0,0 @@[m
+[31m-@echo off[m
+[31m-echo Starting Typhoon ML Backend...[m
+[31m-start cmd /k "cd typhoon-ml && .\venv\Scripts\activate && python api.py"[m
+[31m-[m
+[31m-echo Starting Typhoon Vue Frontend...[m
+[31m-start cmd /k "cd typhoon-frontend && npm run dev"[m
+[31m-[m
+[31m-echo Both services are starting! Please wait a moment...[m
+[31m-echo.[m
+[31m-echo The backend API will be available at: http://localhost:8000[m
+[31m-echo The frontend will be available at: http://localhost:5173 (or 5174)[m
+[31m-echo.[m
+[31m-pause[m
+[1mdiff --git a/typhoon-ml/.idea/misc.xml b/typhoon-ml/.idea/misc.xml[m
+[1mindex 741c9d5..060d2c5 100644[m
+[1m--- a/typhoon-ml/.idea/misc.xml[m
+[1m+++ b/typhoon-ml/.idea/misc.xml[m
+[36m@@ -1,4 +1,4 @@[m
+ <?xml version="1.0" encoding="UTF-8"?>[m
+ <project version="4">[m
+[31m-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (typhoon-ml)" project-jdk-type="Python SDK" />[m
+[32m+[m[32m  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12" project-jdk-type="Python SDK" />[m
+ </project>[m
+\ No newline at end of file[m
+[1mdiff --git a/typhoon-ml/.idea/typhoon-ml.iml b/typhoon-ml/.idea/typhoon-ml.iml[m
+[1mindex 74d515a..9bec52b 100644[m
+[1m--- a/typhoon-ml/.idea/typhoon-ml.iml[m
+[1m+++ b/typhoon-ml/.idea/typhoon-ml.iml[m
+[36m@@ -4,7 +4,7 @@[m
+     <content url="file://$MODULE_DIR$">[m
+       <excludeFolder url="file://$MODULE_DIR$/venv" />[m
+     </content>[m
+[31m-    <orderEntry type="inheritedJdk" />[m
+[32m+[m[32m    <orderEntry type="jdk" jdkName="Python 3.12" jdkType="Python SDK" />[m
+     <orderEntry type="sourceFolder" forTests="false" />[m
+   </component>[m
+ </module>[m
+\ No newline at end of file[m

@@ -1,0 +1,70 @@
+/* src/style.css */
+:root {
+  --primary-color: #1890ff;
+  --bg-color: #f0f2f5;
+  --panel-bg: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #d9d9d9;
+  
+  --color-td: #10b981;    /* 热带低压 */
+  --color-ts: #06b6d4;    /* 热带风暴 */
+  --color-sts: #3b82f6;   /* 强热带风暴 */
+  --color-ty: #eab308;    /* 台风 */
+  --color-sty: #f97316;   /* 强台风 */
+  --color-superty: #ef4444; /* 超强台风 */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+/* App Layout */
+.sidebar {
+  width: 360px;
+  background-color: var(--panel-bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  z-index: 1000; /* Above Leaflet map */
+}
+
+.map-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+/* Leaflet Customizations */
+.leaflet-container {
+  font-family: inherit !important;
+}
+
+/* Common UI */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+input, select {
+  font-family: inherit;
+}

@@ -1,0 +1,9 @@
+package com.typhoon.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.typhoon.entity.PredictionTask;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface PredictionTaskMapper extends BaseMapper<PredictionTask> {
+}
