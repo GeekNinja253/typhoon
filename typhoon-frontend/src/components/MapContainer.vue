@@ -20,6 +20,18 @@ let pathEntities: Cesium.Entity[] = []
 let dynamicEntities: Cesium.Entity[] = []
 let resizeObserver: ResizeObserver | null = null
 
+// 根据台风等级获取对应的颜色
+function getGradeColor(grade: number, isFuture: boolean = false) {
+  let color = Cesium.Color.fromCssColorString('#00D5CB'); // TD, <=7
+  if (grade >= 8 && grade <= 9) color = Cesium.Color.fromCssColorString('#FCFA00'); // TS
+  else if (grade >= 10 && grade <= 11) color = Cesium.Color.fromCssColorString('#FDAA09'); // STS
+  else if (grade >= 12 && grade <= 13) color = Cesium.Color.fromCssColorString('#FB3320'); // TY
+  else if (grade >= 14 && grade <= 15) color = Cesium.Color.fromCssColorString('#F600A9'); // STY
+  else if (grade >= 16) color = Cesium.Color.fromCssColorString('#AA0000'); // SuperTY
+  
+  return isFuture ? color.withAlpha(0.5) : color;
+}
+
 function initCesium() {
   if (!mapContainer.value || viewer) return;
   
@@ -146,11 +158,12 @@ function loadRealPath(data: any[]) {
     positions.push(item.longitude)
     positions.push(item.latitude)
 
+    const grade = item.grade || 7;
     const point = v.entities.add({
       position: Cesium.Cartesian3.fromDegrees(item.longitude, item.latitude),
       point: {
         pixelSize: 8,
-        color: Cesium.Color.DODGERBLUE
+        color: getGradeColor(grade, false)
       }
     })
     pathEntities.push(point)
@@ -239,8 +252,10 @@ function loadPredictedPath(data: any, pathPoints: any[]) {
     v.entities.add({
       position: Cesium.Cartesian3.fromDegrees(p.lng, p.lat),
       point: {
-        pixelSize: 6,
-        color: p.isFuture ? Cesium.Color.ORANGE : Cesium.Color.BLUE
+        pixelSize: p.isFuture ? 6 : 8,
+        color: getGradeColor(p.grade, p.isFuture),
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: p.isFuture ? 0 : 1
       }
     })
   })
@@ -294,40 +309,43 @@ function renderFrame(index: number) {
   })
   dynamicEntities.push(active)
 
-  // 7级风圈 (~250km, 绿色)
+  // 7级风圈: 半径随等级推断变化
   if (pt.grade >= 7) {
+    const radius = 150000 + Math.max(0, pt.grade - 7) * 15000;
     const c7 = v.entities.add({
       position: Cesium.Cartesian3.fromDegrees(pt.lng, pt.lat),
       ellipse: {
-        semiMajorAxis: 250000,
-        semiMinorAxis: 250000,
-        material: Cesium.Color.LIMEGREEN.withAlpha(0.3)
+        semiMajorAxis: radius,
+        semiMinorAxis: radius,
+        material: Cesium.Color.LIMEGREEN.withAlpha(0.25)
       }
     })
     dynamicEntities.push(c7)
   }
 
-  // 10级风圈 (~100km, 橙色)
+  // 10级风圈: 半径随等级推断变化
   if (pt.grade >= 10) {
+    const radius = 80000 + Math.max(0, pt.grade - 10) * 12000;
     const c10 = v.entities.add({
       position: Cesium.Cartesian3.fromDegrees(pt.lng, pt.lat),
       ellipse: {
-        semiMajorAxis: 100000,
-        semiMinorAxis: 100000,
-        material: Cesium.Color.ORANGE.withAlpha(0.4)
+        semiMajorAxis: radius,
+        semiMinorAxis: radius,
+        material: Cesium.Color.ORANGE.withAlpha(0.35)
       }
     })
     dynamicEntities.push(c10)
   }
 
-  // 12级风圈 (~50km, 红色)
+  // 12级风圈: 半径随等级推断变化
   if (pt.grade >= 12) {
+    const radius = 40000 + Math.max(0, pt.grade - 12) * 10000;
     const c12 = v.entities.add({
       position: Cesium.Cartesian3.fromDegrees(pt.lng, pt.lat),
       ellipse: {
-        semiMajorAxis: 50000,
-        semiMinorAxis: 50000,
-        material: Cesium.Color.RED.withAlpha(0.5)
+        semiMajorAxis: radius,
+        semiMinorAxis: radius,
+        material: Cesium.Color.RED.withAlpha(0.45)
       }
     })
     dynamicEntities.push(c12)

@@ -108,11 +108,23 @@ function handleClear() {
       <button class="btn btn-danger" @click="handleClear">清除地图</button>
     </div>
     
-    <div class="legend-section">
-      <h3>风圈图例</h3>
-      <div class="legend-item"><span class="circle c7"></span> 7级风圈 (绿色)</div>
-      <div class="legend-item"><span class="circle c10"></span> 10级风圈 (橙色)</div>
-      <div class="legend-item"><span class="circle c12"></span> 12级风圈 (红色)</div>
+    <div class="legends-container">
+      <div class="legend-section">
+        <h3>台风强度图例</h3>
+        <div class="legend-item"><span class="circle td"></span> 热带低压 (TD, <=7)</div>
+        <div class="legend-item"><span class="circle ts"></span> 热带风暴 (TS, 8-9)</div>
+        <div class="legend-item"><span class="circle sts"></span> 强热带风暴 (STS, 10-11)</div>
+        <div class="legend-item"><span class="circle ty"></span> 台风 (TY, 12-13)</div>
+        <div class="legend-item"><span class="circle sty"></span> 强台风 (STY, 14-15)</div>
+        <div class="legend-item"><span class="circle superty"></span> 超强台风 (SuperTY, >=16)</div>
+      </div>
+      
+      <div class="legend-section">
+        <h3>风圈图例 (动态半径)</h3>
+        <div class="legend-item"><span class="circle c7"></span> 7级风圈 (绿色)</div>
+        <div class="legend-item"><span class="circle c10"></span> 10级风圈 (橙色)</div>
+        <div class="legend-item"><span class="circle c12"></span> 12级风圈 (红色)</div>
+      </div>
     </div>
   </div>
 </template>
@@ -291,13 +303,24 @@ input:focus, select:focus {
   background-color: #fff1f0;
 }
 
-.legend-section {
+.legends-container {
+  display: flex;
+  gap: 20px;
   margin-top: 30px;
 }
+
+.legend-section {
+  flex: 1;
+}
+
 .legend-section h3 {
   font-size: 13px;
   margin-bottom: 10px;
+  color: #111;
+  border-left: 3px solid var(--primary-color);
+  padding-left: 8px;
 }
+
 .legend-item {
   display: flex;
   align-items: center;
@@ -306,13 +329,23 @@ input:focus, select:focus {
   margin-bottom: 6px;
   color: var(--text-secondary);
 }
+
 .circle {
   display: inline-block;
   width: 12px;
   height: 12px;
   border-radius: 50%;
 }
+
 .c7 { background-color: rgba(16, 185, 129, 0.4); border: 1px solid #10b981; }
 .c10 { background-color: rgba(249, 115, 22, 0.4); border: 1px solid #f97316; }
 .c12 { background-color: rgba(239, 68, 68, 0.4); border: 1px solid #ef4444; }
+
+/* 强度图例颜色 */
+.td { background-color: #00D5CB; }
+.ts { background-color: #FCFA00; }
+.sts { background-color: #FDAA09; }
+.ty { background-color: #FB3320; }
+.sty { background-color: #F600A9; }
+.superty { background-color: #AA0000; }
 </style>
