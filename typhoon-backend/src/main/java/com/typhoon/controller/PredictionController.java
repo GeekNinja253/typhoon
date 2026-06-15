@@ -28,4 +28,9 @@ public class PredictionController {
     public java.util.List<com.typhoon.entity.PredictionResult> getTaskResults(@PathVariable Long taskId) {
         return predictionService.getTaskResults(taskId);
     }
+
+    @DeleteMapping("/history/tasks/{taskId}")
+    public void deleteTask(@PathVariable Long taskId) {
+        predictionService.deleteTask(taskId);
+    }
 }

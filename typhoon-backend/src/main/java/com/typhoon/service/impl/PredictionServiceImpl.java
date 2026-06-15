@@ -84,4 +84,13 @@ public class PredictionServiceImpl implements PredictionService {
     public List<PredictionResult> getTaskResults(Long taskId) {
         return predictionResultMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<PredictionResult>().eq("task_id", taskId).orderByAsc("step_index"));
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTask(Long taskId) {
+        // 先删除关联的预测结果
+        predictionResultMapper.delete(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<PredictionResult>().eq("task_id", taskId));
+        // 再删除任务本身
+        predictionTaskMapper.deleteById(taskId);
+    }
 }

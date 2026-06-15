@@ -45,3 +45,12 @@ CREATE TABLE prediction_result (
     pred_wind_speed DOUBLE,
     pred_pressure DOUBLE
 );
+
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nickname VARCHAR(50),
+    role VARCHAR(20) DEFAULT 'USER',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);

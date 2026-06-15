@@ -3,13 +3,25 @@
     <div class="glass-panel">
       <div class="header">
         <h2>📜 历史预测记录</h2>
-        <button class="back-btn" @click="$router.push('/home')">返回仪表盘</button>
+        <div class="header-actions">
+          <button v-if="!isBatchMode" class="batch-btn" @click="enterBatchMode">批量管理</button>
+          <template v-else>
+            <button class="cancel-btn" @click="exitBatchMode">取消</button>
+            <button class="batch-delete-btn" @click="batchDelete" :disabled="selectedTasks.length === 0">
+              批量删除 ({{ selectedTasks.length }})
+            </button>
+          </template>
+          <button class="back-btn" @click="$router.push('/home')">返回仪表盘</button>
+        </div>
       </div>
 
       <div class="table-container">
         <table class="modern-table">
           <thead>
             <tr>
+              <th v-if="isBatchMode">
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="checkbox-all" />
+              </th>
               <th>任务 ID</th>
               <th>预测时间</th>
               <th>初始经度</th>
@@ -21,9 +33,12 @@
           </thead>
           <tbody>
             <tr v-if="tasks.length === 0">
-              <td colspan="7" class="empty-state">暂无预测记录</td>
+              <td :colspan="isBatchMode ? 8 : 7" class="empty-state">暂无预测记录</td>
             </tr>
-            <tr v-for="task in tasks" :key="task.id" class="table-row">
+            <tr v-for="task in tasks" :key="task.id" class="table-row" :class="{ selected: isBatchMode && selectedTasks.includes(task.id) }">
+              <td v-if="isBatchMode">
+                <input type="checkbox" :checked="selectedTasks.includes(task.id)" @change="toggleSelect(task.id)" class="checkbox-item" />
+              </td>
               <td>#{{ task.id }}</td>
               <td>{{ new Date(task.createTime).toLocaleString() }}</td>
               <td>{{ task.startLongitude.toFixed(2) }}°</td>
@@ -32,6 +47,7 @@
               <td>{{ task.startPressure }} hPa</td>
               <td>
                 <button class="view-btn" @click="viewDetails(task.id)">查看轨迹详情</button>
+                <button v-if="!isBatchMode" class="delete-btn" @click="deleteTask(task.id)">删除</button>
               </td>
             </tr>
           </tbody>
@@ -86,6 +102,8 @@ const showModal = ref(false);
 const selectedTaskId = ref<number | null>(null);
 const selectedResults = ref<any[]>([]);
 const loadingDetails = ref(false);
+const isBatchMode = ref(false);
+const selectedTasks = ref<number[]>([]);
 
 const fetchTasks = async () => {
   try {
@@ -117,6 +135,70 @@ const closeModal = () => {
   selectedTaskId.value = null;
 };
 
+const deleteTask = async (taskId: number) => {
+  if (!confirm(`确定要删除任务 #${taskId} 吗？此操作不可撤销。`)) {
+    return;
+  }
+  
+  try {
+    await axios.delete(`http://localhost:8080/api/history/tasks/${taskId}`);
+    tasks.value = tasks.value.filter(task => task.id !== taskId);
+    alert(`任务 #${taskId} 删除成功！`);
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    alert("删除失败，请稍后重试");
+  }
+};
+
+const enterBatchMode = () => {
+  isBatchMode.value = true;
+  selectedTasks.value = [];
+};
+
+const exitBatchMode = () => {
+  isBatchMode.value = false;
+  selectedTasks.value = [];
+};
+
+const toggleSelect = (taskId: number) => {
+  const index = selectedTasks.value.indexOf(taskId);
+  if (index > -1) {
+    selectedTasks.value.splice(index, 1);
+  } else {
+    selectedTasks.value.push(taskId);
+  }
+};
+
+const isAllSelected = ref(false);
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedTasks.value = [];
+  } else {
+    selectedTasks.value = tasks.value.map(task => task.id);
+  }
+};
+
+const batchDelete = async () => {
+  if (selectedTasks.value.length === 0) return;
+  
+  if (!confirm(`确定要删除选中的 ${selectedTasks.value.length} 条记录吗？此操作不可撤销。`)) {
+    return;
+  }
+  
+  try {
+    for (const taskId of selectedTasks.value) {
+      await axios.delete(`http://localhost:8080/api/history/tasks/${taskId}`);
+    }
+    tasks.value = tasks.value.filter(task => !selectedTasks.value.includes(task.id));
+    alert(`成功删除 ${selectedTasks.value.length} 条记录！`);
+    exitBatchMode();
+  } catch (error) {
+    console.error("Failed to delete tasks:", error);
+    alert("批量删除失败，请稍后重试");
+  }
+};
+
 onMounted(() => {
   fetchTasks();
 });
@@ -128,9 +210,12 @@ onMounted(() => {
   min-height: 100vh;
   padding: 40px;
   background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  background-attachment: fixed;
+  background-size: 100% 100%;
   color: #fff;
   font-family: 'Inter', system-ui, sans-serif;
   box-sizing: border-box;
+  width: 100%;
 }
 
 /* 玻璃拟物化面板 */
@@ -151,6 +236,54 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.batch-btn {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.batch-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.batch-delete-btn {
+  background: linear-gradient(90deg, #ff6b6b, #ee5253);
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(238, 82, 83, 0.3);
+}
+
+.batch-delete-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(238, 82, 83, 0.5);
+}
+
+.batch-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .header h2 {
   margin: 0;
   font-weight: 600;
@@ -160,10 +293,13 @@ onMounted(() => {
 /* 现代表格设计 */
 .table-container {
   overflow-x: auto;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
 }
 
 .modern-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -171,6 +307,7 @@ onMounted(() => {
 .modern-table th, .modern-table td {
   padding: 15px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
 }
 
 .modern-table th {
@@ -179,6 +316,11 @@ onMounted(() => {
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  background: rgba(15, 32, 39, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 10;
 }
 
 .modern-table .table-row {
@@ -186,8 +328,19 @@ onMounted(() => {
 }
 
 .modern-table .table-row:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modern-table .table-row.selected {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.checkbox-all,
+.checkbox-item {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #667eea;
 }
 
 .empty-state {
@@ -230,12 +383,28 @@ button {
   box-shadow: 0 6px 20px rgba(0, 201, 255, 0.5);
 }
 
+.delete-btn {
+  background: linear-gradient(90deg, #ff6b6b, #ee5253);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 8px;
+  box-shadow: 0 4px 15px rgba(238, 82, 83, 0.3);
+}
+
+.delete-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(238, 82, 83, 0.5);
+}
+
 /* 模态框设计 */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -244,36 +413,53 @@ button {
 }
 
 .modal-content {
-  width: 80%;
-  max-width: 900px;
-  max-height: 80vh;
-  overflow-y: auto;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 85vh;
+  overflow: hidden;
   position: relative;
   animation: slideUp 0.4s ease;
+}
+
+.modal-content h3 {
+  margin: 0;
+  padding-right: 40px;
+  font-size: 1.3rem;
+  color: #fff;
 }
 
 .close-btn {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: 24px;
-  padding: 0;
+  padding: 5px 12px;
   line-height: 1;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
   color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.2);
   transform: rotate(90deg);
 }
 
 .details-table-container {
-  margin-top: 20px;
+  margin-top: 25px;
+  max-height: calc(85vh - 120px);
+  overflow-y: auto;
+}
+
+.details-table {
+  min-width: 700px;
 }
 
 .details-table th {
   color: #00C9FF;
+  background: rgba(0, 201, 255, 0.1);
 }
 
 /* 动画 */

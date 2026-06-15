@@ -11,4 +11,5 @@ public interface PredictionService {
     MLPredictionResponseDTO predictAndSave(PredictionRequestDTO requestDTO);
     List<PredictionTask> getAllTasks();
     List<PredictionResult> getTaskResults(Long taskId);
+    void deleteTask(Long taskId);
 }
