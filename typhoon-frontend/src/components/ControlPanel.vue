@@ -17,13 +17,22 @@ const formData = ref({
   direction: 315,
   speed: 25,
   intensity: 'STY',
-  grade: 14
+  grade: 14,
+  hours: 60  // 预测时长（小时），默认60小时（10步 × 6小时）
 });
 
 const emit = defineEmits(['simulate', 'clear']);
 
 function handleSimulate() {
-  emit('simulate', formData.value);
+  // 将小时数转换为步数（每6小时一步）
+  const hours = formData.value.hours || 60;
+  const steps = Math.round(hours / 6);
+  
+  const data = {
+    ...formData.value,
+    steps: steps
+  };
+  emit('simulate', data);
 }
 
 function handleClear() {
@@ -98,6 +107,17 @@ function handleClear() {
         <div class="form-group half">
           <label>移动速度 (km/h)</label>
           <input type="number" v-model="formData.speed" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>预测时长 (小时)</label>
+          <input type="number" v-model="formData.hours" min="6" max="240" step="6" />
+        </div>
+        <div class="form-group half">
+          <label>时间精度</label>
+          <div class="input-info">每6小时一个预测点</div>
         </div>
       </div>
 
@@ -193,6 +213,15 @@ input, select {
   border-radius: 4px;
   font-size: 13px;
   outline: none;
+}
+
+.input-info {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
 }
 
 input:focus, select:focus {

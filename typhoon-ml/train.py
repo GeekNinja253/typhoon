@@ -77,9 +77,9 @@ def bearing(lon1, lat1, lon2, lat2):
 
 
 # --- 特征工程与数据插补 ---
-FUTURE_STEPS = 10  # 预测未来步长（例如未来10个时间步的轨迹和状态）
+FUTURE_STEPS = 40  # 预测未来步长（例如未来40个时间步的轨迹和状态，每步6小时=240小时=10天）
 X = []  # 特征矩阵：存放当前时间步的台风状态
-y = []  # 目标矩阵：存放未来10个时间步相对于当前的经纬度及气象指标变化量
+y = []  # 目标矩阵：存放未来40个时间步相对于当前的经纬度及气象指标变化量
 
 print("Building sequences and calculating missing metrics...")
 
@@ -149,7 +149,7 @@ print("Training LinearRegression model...")
 
 # --- 模型训练 ---
 # 使用 sklearn 的线性回归模型 (Linear Regression)
-# 这是一个多输出回归模型 (Multi-output Regression)，能将8维特征映射到50维(10步x5指标)的变化量上
+# 这是一个多输出回归模型 (Multi-output Regression)，能将8维特征映射到200维(40步x5指标)的变化量上
 model = LinearRegression()
 model.fit(X, y)  # 在整理好的数据集上拟合模型
 

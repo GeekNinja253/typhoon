@@ -35,8 +35,14 @@ public class PredictionServiceImpl implements PredictionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MLPredictionResponseDTO predictAndSave(PredictionRequestDTO requestDTO) {
-        // 1. Call ML API
-        MLPredictionResponseDTO response = restTemplate.postForObject(mlApiUrl, requestDTO, MLPredictionResponseDTO.class);
+        // 设置默认步数
+        if (requestDTO.getSteps() == null || requestDTO.getSteps() <= 0) {
+            requestDTO.setSteps(10);
+        }
+        
+        // 1. Call ML API with steps parameter
+        String apiUrl = mlApiUrl + "?steps=" + requestDTO.getSteps();
+        MLPredictionResponseDTO response = restTemplate.postForObject(apiUrl, requestDTO, MLPredictionResponseDTO.class);
         
         if (response == null || response.getError() != null || response.getTrajectory() == null) {
             return response; // Return error or null

@@ -16,4 +16,6 @@ public class PredictionRequestDTO {
     private Double pressure;
     private Double direction;
     private Double speed;
+    
+    private Integer steps;  // 预测步数，默认10步
 }

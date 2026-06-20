@@ -78,7 +78,8 @@ async function onSimulate(data: any) {
       wind_speed: Number(data.windSpeed),
       pressure: Number(data.pressure),
       direction: Number(data.direction),
-      speed: Number(data.speed)
+      speed: Number(data.speed),
+      steps: Number(data.steps) || 10  // 添加预测步数参数
     };
     
     const res = await axios.post('http://localhost:8080/api/predict', payload);

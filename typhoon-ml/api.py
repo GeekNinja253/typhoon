@@ -40,21 +40,25 @@ class PredictionRequest(BaseModel):
 
 
 # 定义 POST 接口 "/predict" 以接收前端的预测请求
+# steps 参数用于指定预测步数（默认40步，最大40步）
 @app.post("/predict")
-def predict_trajectory(req: PredictionRequest):
+def predict_trajectory(req: PredictionRequest, steps: int = 40):
     if model is None:
         return {"error": "Model not loaded"}
+
+    # 限制步数范围（模型最多支持40步）
+    steps = max(1, min(steps, 40))
 
     # 准备特征向量：将请求数据转换为模型所需的顺序与形状
     # 特征顺序：经度, 纬度, 强度(数值), 等级, 风速, 气压, 移动方向, 移动速度
     X = np.array([[req.lon, req.lat, req.intensity, req.grade, req.wind_speed, req.pressure, req.direction, req.speed]])
 
-    # 预测未来 10 个时间步，每个时间步 5 个维度的变化量（Delta）
-    y_pred = model.predict(X)[0]  # 输出形状为 (50,)，因为 10 个时间步 * 5 个变化量
+    # 预测未来 40 个时间步，每个时间步 5 个维度的变化量（Delta）
+    y_pred = model.predict(X)[0]  # 输出形状为 (200,)，因为 40 个时间步 * 5 个变化量
 
     # 将模型输出的相对变化量（Delta）重构为未来的绝对预测值
     trajectory = []
-    for i in range(10):
+    for i in range(steps):
         dLat = y_pred[i * 5]  # 纬度变化量
         dLon = y_pred[i * 5 + 1]  # 经度变化量
         dGrade = y_pred[i * 5 + 2]  # 等级变化量
@@ -69,7 +73,7 @@ def predict_trajectory(req: PredictionRequest):
             "pressure": req.pressure + dPress
         })
 
-    # 返回构建好的未来 10 步的台风预测轨迹
+    # 返回构建好的台风预测轨迹
     return {"trajectory": trajectory}
 
 
