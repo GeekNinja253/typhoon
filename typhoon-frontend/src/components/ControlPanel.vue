@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 interface TyphoonItem {
   id: number;
@@ -7,7 +7,6 @@ interface TyphoonItem {
   chineseName: string;
 }
 
-// Form data
 const formData = ref({
   startTime: '2026-05-20T08:00',
   longitude: 125.0,
@@ -18,13 +17,12 @@ const formData = ref({
   speed: 25,
   intensity: 'STY',
   grade: 14,
-  hours: 60  // 预测时长（小时），默认60小时（10步 × 6小时）
+  hours: 60
 });
 
 const emit = defineEmits(['simulate', 'clear']);
 
 function handleSimulate() {
-  // 将小时数转换为步数（每6小时一步）
   const hours = formData.value.hours || 60;
   const steps = Math.round(hours / 6);
   
@@ -38,8 +36,6 @@ function handleSimulate() {
 function handleClear() {
   emit('clear');
 }
-
-
 </script>
 
 <template>
@@ -50,7 +46,7 @@ function handleClear() {
     </div>
 
     <div class="panel-section">
-      <h3>台风参数输入 (UI 展示)</h3>
+      <h3>台风参数输入</h3>
       
       <div class="form-row">
         <div class="form-group">
@@ -95,18 +91,18 @@ function handleClear() {
         </div>
         <div class="form-group half">
           <label>风力等级</label>
-          <input type="number" v-model="formData.grade" />
+          <input type="number" v-model="formData.grade" min="1" max="17" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group half">
           <label>移动方向 (度)</label>
-          <input type="number" v-model="formData.direction" />
+          <input type="number" v-model="formData.direction" min="0" max="360" />
         </div>
         <div class="form-group half">
           <label>移动速度 (km/h)</label>
-          <input type="number" v-model="formData.speed" />
+          <input type="number" v-model="formData.speed" min="0" />
         </div>
       </div>
 
@@ -120,7 +116,6 @@ function handleClear() {
           <div class="input-info">每6小时一个预测点</div>
         </div>
       </div>
-
     </div>
 
     <div class="panel-actions">
@@ -142,8 +137,8 @@ function handleClear() {
       <div class="legend-section">
         <h3>风圈图例 (动态半径)</h3>
         <div class="legend-item"><span class="circle c7"></span> 7级风圈 (绿色)</div>
-        <div class="legend-item"><span class="circle c10"></span> 10级风圈 (橙色)</div>
-        <div class="legend-item"><span class="circle c12"></span> 12级风圈 (红色)</div>
+        <div class="legend-item"><span class="circle c10"></span> 10级风圈 (黄色)</div>
+        <div class="legend-item"><span class="circle c12"></span> 12级风圈 (橙色)</div>
       </div>
     </div>
   </div>
@@ -228,12 +223,6 @@ input:focus, select:focus {
   border-color: var(--primary-color);
 }
 
-.select-wrapper {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-}
-
 .typhoon-select {
   width: 100%;
   padding: 10px 32px 10px 12px;
@@ -251,40 +240,6 @@ input:focus, select:focus {
 .typhoon-select:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
-}
-
-.select-arrow {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--text-secondary);
-  font-size: 10px;
-  transition: transform 0.2s ease;
-}
-
-.select-wrapper:hover .select-arrow {
-  color: var(--primary-color);
-}
-
-.select-wrapper:focus-within .select-arrow {
-  transform: translateY(-50%) rotate(180deg);
-  color: var(--primary-color);
-}
-
-.typhoon-select:disabled {
-  background-color: #f5f5f5;
-  color: #999;
-  cursor: not-allowed;
-}
-
-.input-row {
-  display: flex;
-  gap: 8px;
-}
-.input-row input {
-  flex: 1;
 }
 
 .btn {
@@ -367,10 +322,9 @@ input:focus, select:focus {
 }
 
 .c7 { background-color: rgba(16, 185, 129, 0.4); border: 1px solid #10b981; }
-.c10 { background-color: rgba(249, 115, 22, 0.4); border: 1px solid #f97316; }
-.c12 { background-color: rgba(239, 68, 68, 0.4); border: 1px solid #ef4444; }
+.c10 { background-color: rgba(234, 179, 8, 0.4); border: 1px solid #eab308; }
+.c12 { background-color: rgba(249, 115, 16, 0.4); border: 1px solid #f97316; }
 
-/* 强度图例颜色 */
 .td { background-color: #00D5CB; }
 .ts { background-color: #FCFA00; }
 .sts { background-color: #FDAA09; }

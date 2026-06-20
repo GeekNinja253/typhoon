@@ -17,6 +17,30 @@
           <div class="info-row"><span>风力等级:</span> <span>{{ currentFrame.grade }} 级</span></div>
           <div class="info-row" v-if="currentFrame.windSpeed !== undefined"><span>风速:</span> <span>{{ Number(currentFrame.windSpeed).toFixed(1) }} m/s</span></div>
           <div class="info-row" v-if="currentFrame.pressure !== undefined"><span>中心气压:</span> <span>{{ Number(currentFrame.pressure).toFixed(1) }} hPa</span></div>
+          
+          <!-- 台风范围数据 -->
+          <div class="range-section">
+            <div class="range-title">台风范围</div>
+            <div v-if="currentFrame.grade >= 7" class="range-row">
+              <span class="range-icon level7">7</span>
+              <span class="range-label">7级风圈</span>
+              <span class="range-value">{{ getWindRadius(7) }} km</span>
+            </div>
+            <div v-if="currentFrame.grade >= 10" class="range-row">
+              <span class="range-icon level10">10</span>
+              <span class="range-label">10级风圈</span>
+              <span class="range-value">{{ getWindRadius(10) }} km</span>
+            </div>
+            <div v-if="currentFrame.grade >= 12" class="range-row">
+              <span class="range-icon level12">12</span>
+              <span class="range-label">12级风圈</span>
+              <span class="range-value">{{ getWindRadius(12) }} km</span>
+            </div>
+            <div v-if="currentFrame.grade >= 7" class="area-row">
+              <span class="area-label">影响面积</span>
+              <span class="area-value">{{ affectedArea }} km²</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -28,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import MapContainer from "../../components/MapContainer.vue";
 import TimelinePlayer from "../../components/TimelinePlayer.vue";
@@ -41,6 +65,36 @@ const mapRef = ref();
 
 const frames = ref<any[]>([]);
 const currentFrame = ref<any>(null);
+
+// 根据台风等级计算风圈半径（单位：km）
+function getWindRadius(level: number): string {
+  if (!currentFrame.value) return "-";
+  const grade = currentFrame.value.grade || 0;
+  
+  let radius: number | null = null;
+  if (level === 7 && grade >= 7) {
+    radius = Math.round((150000 + Math.max(0, grade - 7) * 15000) / 1000);
+  } else if (level === 10 && grade >= 10) {
+    radius = Math.round((80000 + Math.max(0, grade - 10) * 12000) / 1000);
+  } else if (level === 12 && grade >= 12) {
+    radius = Math.round((40000 + Math.max(0, grade - 12) * 10000) / 1000);
+  }
+  
+  return radius !== null ? radius.toString() : "-";
+}
+
+// 计算影响面积（单位：km²）
+const affectedArea = computed(() => {
+  if (!currentFrame.value) return "-";
+  const grade = currentFrame.value.grade || 0;
+  
+  if (grade >= 7) {
+    const radius = (150000 + Math.max(0, grade - 7) * 15000) / 1000;
+    const area = Math.round(Math.PI * Math.pow(radius, 2));
+    return area.toLocaleString();
+  }
+  return "-";
+});
 
 async function loadTyphoon(id: number) {
   try {
@@ -65,7 +119,6 @@ function onClear() {
 
 async function onSimulate(data: any) {
   try {
-    // 映射台风强度字符串到后端需要的数字
     const intensityMap: Record<string, number> = {
       'TD': 1, 'TS': 2, 'STS': 3, 'TY': 4, 'STY': 5, 'SuperTY': 6
     };
@@ -79,17 +132,15 @@ async function onSimulate(data: any) {
       pressure: Number(data.pressure),
       direction: Number(data.direction),
       speed: Number(data.speed),
-      steps: Number(data.steps) || 10  // 添加预测步数参数
+      steps: Number(data.steps) || 10
     };
     
     const res = await axios.post('http://localhost:8080/api/predict', payload);
     const predictedTrajectory = res.data.data.trajectory;
     
-    // 构建预测点
     const startTime = new Date(data.startTime).getTime();
     
     const allPoints: any[] = [];
-    // 添加当前点作为起点
     allPoints.push({
       lat: data.latitude,
       longitude: data.longitude, 
@@ -100,13 +151,12 @@ async function onSimulate(data: any) {
       isFuture: false
     });
     
-    // 添加预测点
     predictedTrajectory.forEach((pt: any, index: number) => {
       allPoints.push({
         lat: pt.lat,
         longitude: pt.lon, 
         time: startTime + (index + 1) * 6 * 3600 * 1000,
-        grade: Math.max(0, Math.round(pt.grade)), // 使用模型预测的实际等级
+        grade: Math.max(0, Math.round(pt.grade)),
         windSpeed: pt.wind_speed,
         pressure: pt.pressure,
         isFuture: true
@@ -196,7 +246,7 @@ function goBack() {
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   z-index: 1000;
-  width: 250px;
+  width: 280px;
   pointer-events: none;
 }
 
@@ -218,6 +268,80 @@ function goBack() {
 
 .info-row span:last-child {
   font-weight: 600;
+}
+
+/* 台风范围模块样式 */
+.range-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #ddd;
+}
+
+.range-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1890ff;
+  margin-bottom: 10px;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.range-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+}
+
+.range-icon.level7 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.range-icon.level10 {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+}
+
+.range-icon.level12 {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.range-label {
+  flex: 1;
+  color: #64748b;
+}
+
+.range-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.area-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #eee;
+  font-size: 13px;
+}
+
+.area-label {
+  color: #64748b;
+}
+
+.area-value {
+  font-weight: 600;
+  color: #1890ff;
 }
 
 .timeline-box {
