@@ -142,10 +142,6 @@ public class AlertServiceImpl implements AlertService {
         LocalDateTime startTime = subscription.getStartTime();
         LocalDateTime endTime = subscription.getEndTime();
         
-        System.out.println("[预警检查] 订阅位置: " + targetLat + ", " + targetLon);
-        System.out.println("[预警检查] 时间范围: " + startTime + " ~ " + endTime);
-        System.out.println("[预警检查] 轨迹点数: " + trajectory.size());
-        
         // 记录已触发的最高等级（同一时间点只播报最高等级）
         Map<Long, Integer> triggeredLevels = new HashMap<>();
         
@@ -168,8 +164,6 @@ public class AlertServiceImpl implements AlertService {
             // Step 3: 等级判断 - 检查是否进入各级风圈
             int highestLevel = getHighestWindLevel(point.getGrade(), distance);
             
-            System.out.println("[预警检查] 轨迹点: 时间=" + pointTime + ", 等级=" + point.getGrade() + ", 距离=" + String.format("%.2f", distance) + "km, 触发等级=" + highestLevel);
-            
             if (highestLevel > 0) {
                 // 检查是否已触发更高等级
                 Long timeKey = point.getTime() / (6 * 3600 * 1000); // 按6小时间隔分组
@@ -185,7 +179,6 @@ public class AlertServiceImpl implements AlertService {
             }
         }
         
-        System.out.println("[预警检查] 生成预警报告数: " + reports.size());
         return reports;
     }
 

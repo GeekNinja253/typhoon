@@ -36,6 +36,14 @@ function handleSimulate() {
 function handleClear() {
   emit('clear');
 }
+
+function setHoursMin() {
+  formData.value.hours = 60;
+}
+
+function setHoursMax() {
+  formData.value.hours = 240;
+}
 </script>
 
 <template>
@@ -109,7 +117,52 @@ function handleClear() {
       <div class="form-row">
         <div class="form-group half">
           <label>预测时长 (小时)</label>
-          <input type="number" v-model="formData.hours" min="6" max="240" step="6" />
+          <div class="duration-control">
+          <input
+            type="number"
+            v-model="formData.hours"
+            min="6"
+            max="240"
+            step="6"
+          />
+
+          <div class="quick-setting">
+  <div class="quick-title">
+    <span class="arrow">▶</span>
+    快捷设置
+  </div>
+
+  <div class="quick-hours">
+    <button
+      class="quick-btn"
+      @click="formData.hours = 60"
+    >
+      60小时
+    </button>
+
+    <button
+      class="quick-btn"
+      @click="formData.hours = 120"
+    >
+      120小时
+    </button>
+
+    <button
+      class="quick-btn"
+      @click="formData.hours = 180"
+    >
+      180小时
+    </button>
+
+    <button
+      class="quick-btn"
+      @click="formData.hours = 240"
+    >
+      240小时
+    </button>
+  </div>
+</div>
+        </div>
         </div>
         <div class="form-group half">
           <label>时间精度</label>
@@ -287,6 +340,31 @@ input:focus, select:focus {
   background-color: #fff1f0;
 }
 
+.duration-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+
+.quick-btn {
+  width: 100%;
+  text-align: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+  background: #f8fafc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
 .legends-container {
   display: flex;
   gap: 20px;
@@ -319,6 +397,68 @@ input:focus, select:focus {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+}
+
+.quick-setting {
+  position: relative;
+  display: inline-block;
+}
+
+.quick-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.arrow {
+  transition: transform 0.25s ease;
+}
+
+.quick-hours {
+  position: absolute;
+
+  top: 100%;
+  left: 0;
+
+  min-width: 140px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 8px;
+
+  background: white;
+
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.12);
+
+  z-index: 9999;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform: translateY(-5px);
+
+  transition: all 0.2s ease;
+}
+
+.quick-setting:hover .quick-hours {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(4px);
+}
+
+.quick-setting:hover .arrow {
+  transform: rotate(90deg);
 }
 
 .c7 { background-color: rgba(16, 185, 129, 0.4); border: 1px solid #10b981; }

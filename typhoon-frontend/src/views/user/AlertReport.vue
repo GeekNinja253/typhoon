@@ -145,7 +145,8 @@
           <div class="modal-info">
             <span>目标位置: {{ selectedReport.cityName }}</span>
             <span>距离: {{ selectedReport.distance }} km</span>
-            <span>触发时间: {{ formatDateTime(selectedReport.triggerTime) }}</span>
+            <span v-if="selectedReport.triggerTime">警告时间: {{ formatWarningTime(selectedReport.triggerTime) }}</span>
+            <span v-if="selectedReport.triggerTime">到达时间: {{ formatDateTime(selectedReport.triggerTime) }}</span>
           </div>
           <div class="message-content">
             <pre>{{ selectedReport.message }}</pre>
@@ -506,6 +507,14 @@ async function deleteReport(id: number) {
 
 function closeModal() {
   selectedReport.value = null;
+}
+
+// 警告时间 = 触发时间 - 24小时
+function formatWarningTime(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  date.setHours(date.getHours() - 24);
+  return date.toLocaleString();
 }
 
 function formatDateTime(dateStr: string) {
