@@ -48,6 +48,37 @@
         <TimelinePlayer :frames="frames" @update:frameIndex="onFrameChange" />
       </div>
     </div>
+
+    <!-- 预警结果弹窗 -->
+    <div v-if="showAlertModal" class="alert-modal-overlay" @click="closeAlertModal">
+      <div class="alert-modal-content" @click.stop>
+        <div class="alert-modal-header">
+          <h3>🌪 台风预警报告</h3>
+          <button class="close-btn" @click="closeAlertModal">×</button>
+        </div>
+        <div class="alert-modal-body">
+          <p class="alert-count">检测到 {{ alertResults.length }} 条预警信息</p>
+          <div class="alert-list">
+            <div v-for="alert in alertResults" :key="alert.id" class="alert-item">
+              <div class="alert-level">
+                <span class="level-badge level-{{ alert.level }}">{{ alert.level }}级预警</span>
+                <span class="alert-city">{{ alert.cityName }}</span>
+              </div>
+              <div class="alert-info">
+                <span>距离: {{ alert.distance }} km</span>
+                <span>触发时间: {{ formatDateTime(alert.triggerTime) }}</span>
+              </div>
+              <div class="alert-message">
+                <pre>{{ alert.message }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-modal-footer">
+          <button class="btn btn-primary" @click="closeAlertModal">知道了</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -65,6 +96,8 @@ const mapRef = ref();
 
 const frames = ref<any[]>([]);
 const currentFrame = ref<any>(null);
+const alertResults = ref<any[]>([]);
+const showAlertModal = ref(false);
 
 // 根据台风等级计算风圈半径（单位：km）
 function getWindRadius(level: number): string {
@@ -167,9 +200,42 @@ async function onSimulate(data: any) {
     if (allPoints.length > 0) currentFrame.value = allPoints[0];
     mapRef.value.loadPredictedPath(data, allPoints);
     mapRef.value.renderFrame(0);
+    
+    // 触发预警检查
+    await checkAlerts(allPoints);
   } catch (error) {
     console.error('预测失败', error);
     alert('请求预测数据失败！请检查 Java 后端服务 (端口 8080) 是否已启动。');
+  }
+}
+
+// 检查预警
+async function checkAlerts(trajectory: any[]) {
+  try {
+    const userId = 1; // 暂固定用户ID
+    
+    // 转换轨迹数据格式
+    const trajectoryData = trajectory.map(pt => ({
+      lat: pt.lat,
+      lon: pt.longitude || pt.lon,
+      grade: pt.grade,
+      windSpeed: pt.windSpeed,
+      pressure: pt.pressure,
+      time: pt.time
+    }));
+    
+    const res = await axios.post('http://localhost:8080/api/alert/check', {
+      userId: userId,
+      trajectory: trajectoryData
+    });
+    
+    alertResults.value = res.data.data;
+    
+    if (alertResults.value.length > 0) {
+      showAlertModal.value = true;
+    }
+  } catch (error) {
+    console.error('预警检查失败', error);
   }
 }
 
@@ -186,6 +252,15 @@ function onFrameChange(index: number) {
 
 function goBack() {
   router.push("/home");
+}
+
+function closeAlertModal() {
+  showAlertModal.value = false;
+}
+
+function formatDateTime(dateStr: string) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleString();
 }
 </script>
 <style scoped>
@@ -346,5 +421,145 @@ function goBack() {
 
 .timeline-box {
   height: 120px;
+}
+
+/* 预警弹窗样式 */
+.alert-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.alert-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.alert-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: white;
+}
+
+.alert-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-btn {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+.alert-modal-body {
+  padding: 20px 24px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.alert-count {
+  color: #ff7875;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.alert-item {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+}
+
+.alert-level {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-badge {
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.level-badge.level-7 {
+  background: #95de64;
+  color: #1890ff;
+}
+
+.level-badge.level-10 {
+  background: #ffc53d;
+  color: #d46b08;
+}
+
+.level-badge.level-12 {
+  background: #ff7875;
+  color: #fff;
+}
+
+.alert-city {
+  font-weight: 600;
+  color: #333;
+}
+
+.alert-info {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.alert-message {
+  background: white;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.alert-message pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.alert-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

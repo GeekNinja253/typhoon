@@ -10,7 +10,9 @@ public class TrajectoryPointDTO {
     private Double grade;
     
     @JsonProperty("wind_speed")
-    private Double wind_speed;
+    private Double windSpeed;
     
     private Double pressure;
+    
+    private Long time;
 }

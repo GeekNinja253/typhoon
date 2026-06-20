@@ -4,6 +4,7 @@ import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
 import Home from "../views/Home.vue";
 import MapView from "../views/user/MapView.vue";
+import AlertReport from "../views/user/AlertReport.vue";
 import AdminHome from "../views/admin/AdminHome.vue";
 
 const routes = [
@@ -16,6 +17,7 @@ const routes = [
 
   { path: "/map", component: MapView, meta: { requiresAuth: true } },
   { path: "/history", component: () => import("../views/user/HistoryView.vue"), meta: { requiresAuth: true } },
+  { path: "/alert", component: AlertReport, meta: { requiresAuth: true } },
   { path: "/admin", component: AdminHome, meta: { requiresAuth: true, requiresAdmin: true } }
 ];
 

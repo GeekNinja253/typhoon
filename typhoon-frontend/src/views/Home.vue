@@ -62,18 +62,19 @@
         </p>
       </div>
 
-      <div class="card">
-
+      <div
+        class="card"
+        @click="$router.push('/alert')"
+      >
         <div class="icon">
-          👤
+          🔔
         </div>
 
-        <h3>用户中心</h3>
+        <h3>预警报告</h3>
 
         <p>
-          即将上线
+          订阅台风预警，获取实时通知
         </p>
-
       </div>
 
     </div>

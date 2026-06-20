@@ -72,7 +72,7 @@ public class PredictionServiceImpl implements PredictionService {
             result.setPredLongitude(point.getLon());
             result.setPredLatitude(point.getLat());
             result.setPredGrade(point.getGrade());
-            result.setPredWindSpeed(point.getWind_speed());
+            result.setPredWindSpeed(point.getWindSpeed());
             result.setPredPressure(point.getPressure());
             
             predictionResultMapper.insert(result);
