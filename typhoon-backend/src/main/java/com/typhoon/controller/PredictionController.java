@@ -5,6 +5,7 @@ import com.typhoon.dto.PredictionRequestDTO;
 import com.typhoon.service.PredictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import com.typhoon.common.Result;
 import com.typhoon.entity.PredictionTask;
 import com.typhoon.entity.PredictionResult;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*") // Allow cross-origin requests from Vue frontend
+@CrossOrigin(origins = "*")
 public class PredictionController {
 
     @Autowired
@@ -20,43 +21,24 @@ public class PredictionController {
 
     @PostMapping("/predict")
     public Result<MLPredictionResponseDTO> predict(
-            @RequestBody PredictionRequestDTO requestDTO) {
-
-        MLPredictionResponseDTO result =
-                predictionService.predictAndSave(requestDTO);
-
-        return Result.success(
-                "预测成功",
-                result
-        );
+            @Valid @RequestBody PredictionRequestDTO requestDTO) {
+        MLPredictionResponseDTO result = predictionService.predictAndSave(requestDTO);
+        return Result.success("预测成功", result);
     }
 
     @GetMapping("/history/tasks")
     public Result<List<PredictionTask>> getAllTasks() {
-
-        return Result.success(
-                predictionService.getAllTasks()
-        );
+        return Result.success(predictionService.getAllTasks());
     }
 
     @GetMapping("/history/tasks/{taskId}/results")
-    public Result<List<PredictionResult>> getTaskResults(
-            @PathVariable Long taskId) {
-
-        return Result.success(
-                predictionService.getTaskResults(taskId)
-        );
+    public Result<List<PredictionResult>> getTaskResults(@PathVariable Long taskId) {
+        return Result.success(predictionService.getTaskResults(taskId));
     }
 
     @DeleteMapping("/history/tasks/{taskId}")
-    public Result<String> deleteTask(
-            @PathVariable Long taskId) {
-
+    public Result<String> deleteTask(@PathVariable Long taskId) {
         predictionService.deleteTask(taskId);
-
-        return Result.success(
-                "删除成功",
-                null
-        );
+        return Result.success("删除成功", null);
     }
 }
