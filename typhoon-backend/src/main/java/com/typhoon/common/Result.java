@@ -34,4 +34,15 @@ public class Result<T> {
         result.setData(null);
         return result;
     }
+
+    /**
+     * 带错误码的错误响应
+     */
+    public static <T> Result<T> error(Integer code, String message) {
+        Result<T> result = new Result<>();
+        result.setCode(code);
+        result.setMessage(message);
+        result.setData(null);
+        return result;
+    }
 }
