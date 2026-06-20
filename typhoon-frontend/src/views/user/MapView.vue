@@ -45,10 +45,10 @@ const currentFrame = ref<any>(null);
 async function loadTyphoon(id: number) {
   try {
     const res = await getTyphoonPath(id);
-    frames.value = res.data;
+    frames.value = res.data.data;
     if (frames.value.length > 0) currentFrame.value = frames.value[0];
 
-    mapRef.value.loadRealPath(res.data);
+    mapRef.value.loadRealPath(res.data.data);
     mapRef.value.renderFrame(0);
   } catch (error) {
     console.error("Failed to load predefined path", error);
@@ -83,7 +83,7 @@ async function onSimulate(data: any) {
     };
     
     const res = await axios.post('http://localhost:8080/api/predict', payload);
-    const predictedTrajectory = res.data.trajectory;
+    const predictedTrajectory = res.data.data.trajectory;
     
     // 构建预测点
     const startTime = new Date(data.startTime).getTime();

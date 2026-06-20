@@ -1,5 +1,6 @@
 package com.typhoon.controller;
 
+import com.typhoon.common.Result;
 import com.typhoon.entity.TyphoonPath;
 import com.typhoon.service.TyphoonPathService;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/typhoon/path")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class TyphoonPathController {
 
     private final TyphoonPathService typhoonPathService;
@@ -18,8 +19,7 @@ public class TyphoonPathController {
     }
 
     @GetMapping("/{id}")
-    public List<TyphoonPath> getPath(@PathVariable Long id) {
-
-        return typhoonPathService.getPathByTyphoonId(id);
+    public Result<List<TyphoonPath>> getPath(@PathVariable Long id) {
+        return Result.success(typhoonPathService.getPathByTyphoonId(id));
     }
 }

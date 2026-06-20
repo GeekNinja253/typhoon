@@ -108,7 +108,7 @@ const selectedTasks = ref<number[]>([]);
 const fetchTasks = async () => {
   try {
     const res = await axios.get('http://localhost:8080/api/history/tasks');
-    tasks.value = res.data;
+    tasks.value = res.data.data;
   } catch (error) {
     console.error("Failed to fetch tasks:", error);
   }

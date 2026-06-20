@@ -70,11 +70,13 @@ async function handleLogin() {
   try {
     const res = await login(form.value);
 
+    const user = res.data.data;
+
     const userData = {
-      username: res.data.username || form.value.username,
-      role: res.data.role || "USER",
-      ...res.data
-    };
+    username: user.username,
+    role: user.role || "USER",
+    ...user
+  };
 
     localStorage.setItem("user", JSON.stringify(userData));
 

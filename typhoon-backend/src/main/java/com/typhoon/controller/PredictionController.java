@@ -5,6 +5,10 @@ import com.typhoon.dto.PredictionRequestDTO;
 import com.typhoon.service.PredictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.typhoon.common.Result;
+import com.typhoon.entity.PredictionTask;
+import com.typhoon.entity.PredictionResult;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -15,22 +19,44 @@ public class PredictionController {
     private PredictionService predictionService;
 
     @PostMapping("/predict")
-    public MLPredictionResponseDTO predict(@RequestBody PredictionRequestDTO requestDTO) {
-        return predictionService.predictAndSave(requestDTO);
+    public Result<MLPredictionResponseDTO> predict(
+            @RequestBody PredictionRequestDTO requestDTO) {
+
+        MLPredictionResponseDTO result =
+                predictionService.predictAndSave(requestDTO);
+
+        return Result.success(
+                "预测成功",
+                result
+        );
     }
 
     @GetMapping("/history/tasks")
-    public java.util.List<com.typhoon.entity.PredictionTask> getAllTasks() {
-        return predictionService.getAllTasks();
+    public Result<List<PredictionTask>> getAllTasks() {
+
+        return Result.success(
+                predictionService.getAllTasks()
+        );
     }
 
     @GetMapping("/history/tasks/{taskId}/results")
-    public java.util.List<com.typhoon.entity.PredictionResult> getTaskResults(@PathVariable Long taskId) {
-        return predictionService.getTaskResults(taskId);
+    public Result<List<PredictionResult>> getTaskResults(
+            @PathVariable Long taskId) {
+
+        return Result.success(
+                predictionService.getTaskResults(taskId)
+        );
     }
 
     @DeleteMapping("/history/tasks/{taskId}")
-    public void deleteTask(@PathVariable Long taskId) {
+    public Result<String> deleteTask(
+            @PathVariable Long taskId) {
+
         predictionService.deleteTask(taskId);
+
+        return Result.success(
+                "删除成功",
+                null
+        );
     }
 }
