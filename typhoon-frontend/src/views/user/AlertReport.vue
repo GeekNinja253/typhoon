@@ -126,6 +126,7 @@
                 </div>
               </div>
               <div v-if="!isBatchMode" class="report-actions">
+                <button class="btn btn-small btn-analysis" @click.stop="goAnalysis(report)">详细分析</button>
                 <button class="btn btn-small btn-danger" @click.stop="deleteReport(report.id)">删除</button>
               </div>
             </div>
@@ -157,6 +158,7 @@
             <button class="btn btn-danger" @click="deleteReport(selectedReport.id); closeModal()">删除</button>
           </div>
           <div class="modal-footer-right">
+            <button class="btn btn-primary btn-analysis" @click="goAnalysis(selectedReport)">详细分析</button>
             <button v-if="selectedReport.status === 0" class="btn btn-primary" 
                     @click="markAsRead(selectedReport.id)">标记为已读</button>
             <button class="btn" @click="closeModal">关闭</button>
@@ -525,6 +527,12 @@ function formatDateTime(dateStr: string) {
 function goBack() {
   router.push('/home');
 }
+
+function goAnalysis(report: any) {
+  console.log('goAnalysis report:', report);
+  sessionStorage.setItem('currentAnalysis', JSON.stringify(report));
+  router.push(`/analysis/${report.id}`);
+}
 </script>
 
 <style scoped>
@@ -674,6 +682,17 @@ input, select {
 .btn-edit:hover {
   background: #1890ff;
   color: white;
+}
+
+.btn-analysis {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+}
+
+.btn-analysis:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-1px);
 }
 
 .btn-small {

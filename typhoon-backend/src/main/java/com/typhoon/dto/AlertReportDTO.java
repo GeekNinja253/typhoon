@@ -63,4 +63,14 @@ public class AlertReportDTO {
      * 城市名称
      */
     private String cityName;
+
+    /**
+     * 城市纬度
+     */
+    private Double latitude;
+
+    /**
+     * 城市经度
+     */
+    private Double longitude;
 }

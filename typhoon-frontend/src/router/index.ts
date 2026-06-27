@@ -18,6 +18,7 @@ const routes = [
   { path: "/map", component: MapView, meta: { requiresAuth: true } },
   { path: "/history", component: () => import("../views/user/HistoryView.vue"), meta: { requiresAuth: true } },
   { path: "/alert", component: AlertReport, meta: { requiresAuth: true } },
+  { path: "/analysis/:id", component: () => import("../views/user/AnalysisView.vue"), meta: { requiresAuth: true } },
   { path: "/admin", component: AdminHome, meta: { requiresAuth: true, requiresAdmin: true } }
 ];
 

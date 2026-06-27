@@ -18,22 +18,25 @@
           <div class="info-row" v-if="currentFrame.windSpeed !== undefined"><span>风速:</span> <span>{{ Number(currentFrame.windSpeed).toFixed(1) }} m/s</span></div>
           <div class="info-row" v-if="currentFrame.pressure !== undefined"><span>中心气压:</span> <span>{{ Number(currentFrame.pressure).toFixed(1) }} hPa</span></div>
           
+          <!-- 详细分析按钮 -->
+          <!-- <button class="btn-analysis-overlay" @click="goToAnalysis">📊 详细分析</button> -->
+          
           <!-- 台风范围数据 -->
           <div class="range-section">
             <div class="range-title">台风范围</div>
             <div v-if="currentFrame.grade >= 7" class="range-row">
               <span class="range-icon level7">7</span>
-              <span class="range-label">7级风圈</span>
+              <span class="range-label">7级风圈半径</span>
               <span class="range-value">{{ getWindRadius(7) }} km</span>
             </div>
             <div v-if="currentFrame.grade >= 10" class="range-row">
               <span class="range-icon level10">10</span>
-              <span class="range-label">10级风圈</span>
+              <span class="range-label">10级风圈半径</span>
               <span class="range-value">{{ getWindRadius(10) }} km</span>
             </div>
             <div v-if="currentFrame.grade >= 12" class="range-row">
               <span class="range-icon level12">12</span>
-              <span class="range-label">12级风圈</span>
+              <span class="range-label">12级风圈半径</span>
               <span class="range-value">{{ getWindRadius(12) }} km</span>
             </div>
             <div v-if="currentFrame.grade >= 7" class="area-row">
@@ -71,6 +74,7 @@
               <div class="alert-message">
                 <pre>{{ alert.message }}</pre>
               </div>
+              <button class="btn-analysis-alert" @click="goToAnalysisFromAlert(alert)">📊 详细分析</button>
             </div>
           </div>
         </div>
@@ -258,6 +262,78 @@ function closeAlertModal() {
   showAlertModal.value = false;
 }
 
+function goToAnalysis() {
+  // 保存当前的实时数据到sessionStorage
+  const analysisData = {
+    // 基本信息
+    id: 0,
+    level: currentFrame.value?.grade || 12,
+    cityName: '当前预测位置',
+    latitude: currentFrame.value?.lat || 0,
+    longitude: currentFrame.value?.longitude || currentFrame.value?.lon || 0,
+    distance: 0,
+    createTime: new Date(currentFrame.value?.time || Date.now()).toISOString(),
+    triggerTime: null,
+    // 实时数据
+    typhoonLat: currentFrame.value?.lat || 0,
+    typhoonLng: currentFrame.value?.longitude || currentFrame.value?.lon || 0,
+    grade: currentFrame.value?.grade || 12,
+    windSpeed: currentFrame.value?.windSpeed || 0,
+    pressure: currentFrame.value?.pressure || 1000,
+    // 风圈数据
+    windRadius7: currentFrame.value?.grade >= 7 ? Math.round((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000) : 0,
+    windRadius10: currentFrame.value?.grade >= 10 ? Math.round((80000 + Math.max(0, (currentFrame.value?.grade || 0) - 10) * 12000) / 1000) : 0,
+    windRadius12: currentFrame.value?.grade >= 12 ? Math.round((40000 + Math.max(0, (currentFrame.value?.grade || 0) - 12) * 10000) / 1000) : 0,
+    affectedArea: currentFrame.value?.grade >= 7 ? Math.round(Math.PI * Math.pow((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000, 2)) : 0,
+    // 完整帧数据
+    frames: frames.value,
+    message: `台风实时监测数据：
+- 经度: ${(currentFrame.value?.longitude || currentFrame.value?.lon || 0).toFixed(2)}°
+- 纬度: ${(currentFrame.value?.lat || 0).toFixed(2)}°
+- 风力等级: ${currentFrame.value?.grade || 0}级
+- 风速: ${(currentFrame.value?.windSpeed || 0).toFixed(1)} m/s
+- 中心气压: ${(currentFrame.value?.pressure || 0).toFixed(0)} hPa
+- 7级风圈: ${currentFrame.value?.grade >= 7 ? Math.round((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000) : 0} km
+- 10级风圈: ${currentFrame.value?.grade >= 10 ? Math.round((80000 + Math.max(0, (currentFrame.value?.grade || 0) - 10) * 12000) / 1000) : 0} km
+- 12级风圈: ${currentFrame.value?.grade >= 12 ? Math.round((40000 + Math.max(0, (currentFrame.value?.grade || 0) - 12) * 10000) / 1000) : 0} km`
+  };
+  
+  sessionStorage.setItem('currentAnalysis', JSON.stringify(analysisData));
+  router.push('/analysis/0');
+}
+
+// 从预警弹窗跳转详细分析
+function goToAnalysisFromAlert(alert: any) {
+  const analysisData = {
+    // 基本信息（使用预警数据中的订阅地址信息）
+    id: alert.id || 0,
+    level: alert.level || 12,
+    cityName: alert.cityName || '订阅位置',
+    latitude: alert.latitude || 0,
+    longitude: alert.longitude || 0,
+    distance: alert.distance || 0,
+    createTime: alert.createTime || new Date().toISOString(),
+    triggerTime: alert.triggerTime || null,
+    // 从预警消息中解析台风实时数据
+    typhoonLat: currentFrame.value?.lat || 0,
+    typhoonLng: currentFrame.value?.longitude || currentFrame.value?.lon || 0,
+    grade: currentFrame.value?.grade || 12,
+    windSpeed: currentFrame.value?.windSpeed || 0,
+    pressure: currentFrame.value?.pressure || 1000,
+    // 风圈数据
+    windRadius7: currentFrame.value?.grade >= 7 ? Math.round((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000) : 0,
+    windRadius10: currentFrame.value?.grade >= 10 ? Math.round((80000 + Math.max(0, (currentFrame.value?.grade || 0) - 10) * 12000) / 1000) : 0,
+    windRadius12: currentFrame.value?.grade >= 12 ? Math.round((40000 + Math.max(0, (currentFrame.value?.grade || 0) - 12) * 10000) / 1000) : 0,
+    affectedArea: currentFrame.value?.grade >= 7 ? Math.round(Math.PI * Math.pow((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000, 2)) : 0,
+    // 完整帧数据
+    frames: frames.value,
+    message: alert.message || ''
+  };
+  
+  sessionStorage.setItem('currentAnalysis', JSON.stringify(analysisData));
+  router.push(`/analysis/${alert.id || 0}`);
+}
+
 function formatDateTime(dateStr: string) {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleString();
@@ -343,6 +419,27 @@ function formatDateTime(dateStr: string) {
 
 .info-row span:last-child {
   font-weight: 600;
+}
+
+.btn-analysis-overlay {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: auto;
+  transition: all 0.3s;
+}
+
+.btn-analysis-overlay:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* 台风范围模块样式 */
@@ -549,6 +646,26 @@ function formatDateTime(dateStr: string) {
   white-space: pre-wrap;
   max-height: 200px;
   overflow-y: auto;
+}
+
+.btn-analysis-alert {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-analysis-alert:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .alert-message pre {

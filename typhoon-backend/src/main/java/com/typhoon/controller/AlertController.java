@@ -213,10 +213,12 @@ public class AlertController {
         dto.setStatus(report.getStatus());
         dto.setCreateTime(report.getCreateTime());
         
-        // 获取城市名称
+        // 获取城市信息（城市名称、纬度、经度）
         AlertSubscription subscription = subscriptionMapper.selectById(report.getSubscriptionId());
         if (subscription != null) {
             dto.setCityName(subscription.getCityName());
+            dto.setLatitude(subscription.getLatitude());
+            dto.setLongitude(subscription.getLongitude());
         }
         
         return dto;
