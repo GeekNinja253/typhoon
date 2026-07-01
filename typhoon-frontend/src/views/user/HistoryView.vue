@@ -122,7 +122,7 @@ const viewDetails = async (taskId: number) => {
   
   try {
     const res = await axios.get(`http://localhost:8080/api/history/tasks/${taskId}/results`);
-    selectedResults.value = res.data;
+    selectedResults.value = res.data.data;
   } catch (error) {
     console.error("Failed to fetch results:", error);
   } finally {
