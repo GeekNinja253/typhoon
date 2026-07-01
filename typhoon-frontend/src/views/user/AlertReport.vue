@@ -660,6 +660,7 @@ input, select {
 
 .btn-primary:hover {
   background: #40a9ff;
+  transform: translateY(-1px);
 }
 
 .btn-warning {
@@ -667,10 +668,20 @@ input, select {
   color: white;
 }
 
+.btn-warning:hover {
+  background: #ffc53d;
+  transform: translateY(-1px);
+}
+
 .btn-danger {
-  background: #fff;
-  color: #ff4d4f;
-  border: 1px solid #ff4d4f;
+  background: linear-gradient(135deg, #ff6b6b, #ee5253);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #ee5253, #ff6b6b);
+  transform: translateY(-1px);
 }
 
 .btn-edit {
@@ -682,6 +693,7 @@ input, select {
 .btn-edit:hover {
   background: #1890ff;
   color: white;
+  transform: translateY(-1px);
 }
 
 .btn-analysis {
@@ -826,6 +838,8 @@ input, select {
   position: absolute;
   right: 14px;
   bottom: 14px;
+  display: flex;
+  gap: 16px;
 }
 
 .report-header {
