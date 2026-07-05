@@ -5,279 +5,42 @@
     <div class="bg-blob blob-2"></div>
     <div class="bg-blob blob-3"></div>
 
-    <div class="header">
-      <div class="logo-section">
-        <div class="logo-icon">🌪</div>
-        <div>
-          <h1>台风路径分析系统</h1>
-          <p>Typhoon Prediction Platform</p>
-        </div>
-      </div>
+    <HomeHeader
+        :username="username"
+        @logout="handleLogout"
+    />
 
-      <div class="user-section">
-        <div class="user-info">
-          <span class="user-icon">👤</span>
-          <span class="user-name">{{ username }}</span>
-        </div>
-        <button class="logout-btn" @click="handleLogout">
-          <span>退出登录</span>
-          <span class="logout-icon">🚪</span>
-        </button>
-      </div>
-    </div>
+    <WelcomeSection
+        :username="username"
+        :currentTime="currentTime"
+    />
 
-    <div class="welcome-section">
-      <div class="welcome-content">
-        <h2>
-          <span class="greeting">欢迎回来，</span>
-          <span class="username-highlight">{{ username }}</span>
-        </h2>
-        <p class="welcome-desc">
-          基于机器学习的台风路径预测与分析平台
-        </p>
-        <div class="current-time">
-          当前时间：{{ currentTime }}
-        </div>
-      </div>
-      <div class="welcome-visual">
-        <div class="typhoon-animation">
-          <div class="typhoon-circle"></div>
-          <div class="typhoon-ring ring-1"></div>
-          <div class="typhoon-ring ring-2"></div>
-          <div class="typhoon-ring ring-3"></div>
-        </div>
-      </div>
-    </div>
+    <StatsSection
+      :stats="stats"
+      @openAlertRecordModal="openAlertRecordModal"
+      @openAlertModal="openAlertModal"
+      @openSubscriptionModal="openSubscriptionModal"
+    />
 
-    <div class="stats-section">
-      <div class="stat-card stat-alerts clickable" @click="openAlertRecordModal">
-        <div class="stat-icon">🔔</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.alertCount }}</div>
-          <div class="stat-label">预警记录</div>
-          <div class="stat-sub">未读 {{ stats.unreadCount }} 条</div>
-        </div>
-        <div class="stat-trend positive">↑ {{ stats.alertTrend }}%</div>
-        <div class="stat-arrow">→</div>
-      </div>
+    <QuickActions />
 
-      <div class="stat-card stat-history clickable" @click="openAlertModal">
-        <div class="stat-icon">📊</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.historyCount }}</div>
-          <div class="stat-label">历史任务</div>
-          <div class="stat-sub">未读 {{ stats.historyUnreadCount }}</div>
-        </div>
-        <div class="stat-trend positive">↑ {{ stats.historyTrend }}%</div>
-        <div class="stat-arrow">→</div>
-      </div>
+    <AnalysisSection />
 
-      <div class="stat-card stat-subscriptions clickable" @click="openSubscriptionModal">
-        <div class="stat-icon">📍</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.activeCities.length }}</div>
-          <div class="stat-label">已启用订阅</div>
-          <div class="stat-sub">{{ stats.activeCities.join('、') || '暂无' }}</div>
-        </div>
-        <div class="stat-trend neutral">—</div>
-        <div class="stat-arrow">→</div>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <h3 class="section-title">
-        <span class="title-icon">⚡</span>
-        快速操作
-      </h3>
-      <div class="action-grid">
-        <div class="action-card" @click="$router.push('/map')">
-          <div class="action-icon-wrapper blue">
-            <span class="action-icon">🌪</span>
-          </div>
-          <div class="action-info">
-            <h4>GIS地图分析</h4>
-            <p>查看台风路径预测结果，实时追踪台风动态</p>
-          </div>
-          <div class="action-arrow">→</div>
-        </div>
-
-        <div class="action-card" @click="$router.push('/history')">
-          <div class="action-icon-wrapper purple">
-            <span class="action-icon">📜</span>
-          </div>
-          <div class="action-info">
-            <h4>历史预测记录</h4>
-            <p>查看历史任务与预测数据，分析预测趋势</p>
-          </div>
-          <div class="action-arrow">→</div>
-        </div>
-
-        <div class="action-card" @click="$router.push('/alert')">
-          <div class="action-icon-wrapper orange">
-            <span class="action-icon">🔔</span>
-          </div>
-          <div class="action-info">
-            <h4>预警报告</h4>
-            <p>订阅台风预警，获取实时通知与详细分析</p>
-          </div>
-          <div class="action-arrow">→</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="analysis-section">
-      <div class="analysis-card knowledge-card">
-        <div class="card-header">
-          <h3 class="card-title">🌪 台风科普知识</h3>
-        </div>
-        <div class="knowledge-content">
-          <div class="knowledge-item">
-            <div class="knowledge-icon">🌀</div>
-            <div class="knowledge-info">
-              <h4>台风等级划分</h4>
-              <p>根据风速分为6个等级：热带低压、热带风暴、强热带风暴、台风、强台风、超强台风</p>
-            </div>
-          </div>
-          <div class="knowledge-item">
-            <div class="knowledge-icon">📏</div>
-            <div class="knowledge-info">
-              <h4>预警信号等级</h4>
-              <p>蓝、黄、橙、红四级预警，分别对应一般、较重、严重、特别严重四个等级</p>
-            </div>
-          </div>
-          <div class="knowledge-item">
-            <div class="knowledge-icon">🏠</div>
-            <div class="knowledge-info">
-              <h4>防御措施</h4>
-              <p>台风来临前检查门窗、准备应急物资、避免前往海边活动</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="analysis-card system-card">
-        <div class="card-header">
-          <h3 class="card-title">💡 系统动态</h3>
-        </div>
-        <div class="system-content">
-          <div class="system-status">
-            <div class="status-dot green"></div>
-            <span>系统运行正常</span>
-          </div>
-          <div class="system-item">
-            <div class="system-icon">🔄</div>
-            <div class="system-info">
-              <span class="system-label">数据更新</span>
-              <span class="system-value">实时同步</span>
-            </div>
-          </div>
-          <div class="system-item">
-            <div class="system-icon">🌐</div>
-            <div class="system-info">
-              <span class="system-label">气象数据源</span>
-              <span class="system-value">国家气象局</span>
-            </div>
-          </div>
-          <div class="system-item">
-            <div class="system-icon">⚡</div>
-            <div class="system-info">
-              <span class="system-label">预测模型</span>
-              <span class="system-value">机器学习v2.0</span>
-            </div>
-          </div>
-          <div class="system-update">
-            <span class="update-icon">📝</span>
-            <div class="update-info">
-              <span class="update-title">最近更新</span>
-              <span class="update-content">优化预测算法，提升路径预测准确率</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tips-section">
-      <h3 class="section-title">
-        <span class="title-icon">�</span>
-        台风防御小贴士
-      </h3>
-      <div class="tips-grid">
-        <div class="tip-card">
-          <div class="tip-icon">🏠</div>
-          <h4>居家防范</h4>
-          <p>检查门窗加固，准备应急物资，关闭不必要电源</p>
-        </div>
-        <div class="tip-card">
-          <div class="tip-icon">🚶</div>
-          <h4>户外安全</h4>
-          <p>减少外出，远离广告牌和高大树木，注意高空坠物</p>
-        </div>
-        <div class="tip-card">
-          <div class="tip-icon">🚢</div>
-          <h4>海上作业</h4>
-          <p>小型船只及时回港避风，海上作业人员注意安全</p>
-        </div>
-      </div>
-    </div>
+    <TipsSection />
 
     <div class="footer">
       <p>© 2026 台风路径分析系统 | 基于机器学习的智能预测平台</p>
     </div>
 
-    <div v-if="showAlertModal" class="modal-overlay" @click.self="closeAlertModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="header-icon">📊</div>
-          <h3>历史任务</h3>
-          <button class="close-btn" @click="closeAlertModal">×</button>
-        </div>
-        <div class="modal-body">
-          <div v-if="alertTasks.length === 0" class="empty-state">
-            <span class="empty-icon">📭</span>
-            <p>暂无历史任务</p>
-          </div>
-          <div v-else class="details-table-container">
-            <table class="modern-table details-table">
-              <thead>
-                <tr>
-                  <th>状态</th>
-                  <th>任务 ID</th>
-                  <th>预测时间</th>
-                  <th>初始经度</th>
-                  <th>初始纬度</th>
-                  <th>初始强度</th>
-                  <th>气压</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="task in alertTasks" :key="task.id" class="table-row" :class="{ unread: !alertReadTasks.includes(task.id) }">
-                  <td>
-                    <span v-if="!alertReadTasks.includes(task.id)" class="status-dot unread"></span>
-                    <span v-else class="status-dot read"></span>
-                  </td>
-                  <td><span class="task-id">#{{ task.id }}</span></td>
-                  <td>{{ formatDateTime(task.createTime) }}</td>
-                  <td>{{ task.startLongitude.toFixed(2) }}°</td>
-                  <td>{{ task.startLatitude.toFixed(2) }}°</td>
-                  <td><span class="intensity-badge">{{ task.startIntensity }}</span></td>
-                  <td>{{ task.startPressure }} hPa</td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn btn-small btn-primary" @click="viewTaskDetails(task.id)">查看轨迹</button>
-                      <button class="btn btn-small btn-danger" @click="deleteTask(task.id)">删除</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" @click="closeAlertModal">关闭</button>
-        </div>
-      </div>
-    </div>
+    <HistoryModal
+      :visible="showAlertModal"
+      :alert-tasks="alertTasks"
+      :alert-read-tasks="alertReadTasks"
+      :format-date-time="formatDateTime"
+      @close="closeAlertModal"
+      @view-task="viewTaskDetails"
+      @delete-task="deleteTask"
+    />
 
     <ReportModal 
       :visible="showAlertRecordModal"
@@ -305,48 +68,13 @@
       @delete="deleteSubscription"
     />
 
-    <div v-if="showTaskModal" class="modal-overlay" @click.self="closeTaskModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="header-icon">📍</div>
-          <h3>任务 #{{ selectedTaskId }} - 轨迹预测详情</h3>
-          <button class="close-btn" @click="closeTaskModal">×</button>
-        </div>
-        <div class="modal-body">
-          <div v-if="loadingTaskDetails" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>加载中...</p>
-          </div>
-          <div v-else class="details-table-container">
-            <table class="modern-table details-table">
-              <thead>
-                <tr>
-                  <th>步长 (Step)</th>
-                  <th>预测经度</th>
-                  <th>预测纬度</th>
-                  <th>预测等级</th>
-                  <th>风速 (m/s)</th>
-                  <th>气压 (hPa)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="result in selectedTaskResults" :key="result.id" class="table-row">
-                  <td>{{ result.stepIndex }}</td>
-                  <td>{{ result.predLongitude.toFixed(4) }}°</td>
-                  <td>{{ result.predLatitude.toFixed(4) }}°</td>
-                  <td>{{ result.predGrade.toFixed(2) }}</td>
-                  <td>{{ result.predWindSpeed.toFixed(2) }}</td>
-                  <td>{{ result.predPressure.toFixed(2) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" @click="closeTaskModal">关闭</button>
-        </div>
-      </div>
-    </div>
+    <TaskDetailModal
+      :visible="showTaskModal"
+      :task-id="selectedTaskId"
+      :results="selectedTaskResults"
+      :loading="loadingTaskDetails"
+      @close="closeTaskModal"
+    />
   </div>
 </template>
 
@@ -356,6 +84,14 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import ReportModal from '../../components/WarningBroadcast/ReportModal.vue';
 import SubscriptionModal from '../../components/WarningBroadcast/SubscriptionModal.vue';
+import HomeHeader from '../../components/Home/HomeHeader.vue';
+import WelcomeSection from '../../components/Home/WelcomeSection.vue';
+import StatsSection from '../../components/Home/StatsSection.vue';
+import QuickActions from '../../components/Home/QuickActions.vue';
+import AnalysisSection from '../../components/Home/AnalysisSection.vue';
+import TipsSection from '../../components/Home/TipsSection.vue';
+import HistoryModal from '../../components/Home/HistoryModal.vue';
+import TaskDetailModal from '../../components/Home/TaskDetailModal.vue';
 
 import '@/styles/home.css'
 
