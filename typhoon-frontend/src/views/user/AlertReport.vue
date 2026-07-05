@@ -619,6 +619,7 @@ function goAnalysis(report: any) {
     radial-gradient(circle at 80% 20%, rgba(0, 201, 255, 0.1) 0%, transparent 50%);
   animation: bgPulse 20s ease-in-out infinite;
   z-index: 0;
+  pointer-events: none;
 }
 
 @keyframes bgPulse {
@@ -632,6 +633,7 @@ function goAnalysis(report: any) {
   filter: blur(80px);
   opacity: 0.2;
   z-index: 0;
+  pointer-events: none;
 }
 
 .blob-1 {
@@ -1234,10 +1236,6 @@ input::placeholder, select::placeholder {
   height: 18px;
   cursor: pointer;
   accent-color: #667eea;
-}
-
-.report-content {
-  /* padding-left 由 report-item 提供 */
 }
 
 .report-actions {
