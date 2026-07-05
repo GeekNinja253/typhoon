@@ -202,6 +202,10 @@ function setHoursMax() {
   padding: 20px;
   overflow-y: auto;
   height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .header {
@@ -212,8 +216,9 @@ function setHoursMax() {
 
 .header h2 {
   font-size: 18px;
-  color: var(--primary-color);
+  color: #667eea;
   margin-bottom: 4px;
+  font-weight: 700;
 }
 
 .subtitle {
@@ -228,9 +233,10 @@ function setHoursMax() {
 .panel-section h3 {
   font-size: 14px;
   margin-bottom: 12px;
-  color: #111;
-  border-left: 3px solid var(--primary-color);
+  color: #333;
+  border-left: 3px solid #667eea;
   padding-left: 8px;
+  font-weight: 600;
 }
 
 .form-row {
@@ -256,44 +262,49 @@ label {
 }
 
 input, select {
-  padding: 8px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  padding: 10px 14px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
   font-size: 13px;
   outline: none;
   color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .input-info {
-  padding: 8px;
+  padding: 10px 14px;
   font-size: 12px;
   color: #666;
-  background-color: #f8fafc;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
 }
 
 input:focus, select:focus {
-  border-color: var(--primary-color);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .typhoon-select {
   width: 100%;
   padding: 10px 32px 10px 12px;
   appearance: none;
-  background-color: #fff;
+  background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.2s ease;
+  color: #333;
 }
 
 .typhoon-select:hover {
-  border-color: var(--primary-color);
-  background-color: #f8fafc;
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
 }
 
 .typhoon-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .btn {
@@ -326,22 +337,31 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   padding: 12px;
   font-size: 14px;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 .btn-primary:hover {
-  background-color: #40a9ff;
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-danger {
-  background-color: #fff;
-  color: var(--color-superty);
-  border: 1px solid var(--color-superty);
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 .btn-danger:hover {
-  background-color: #fff1f0;
+  background: rgba(255, 107, 107, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
 }
 
 .duration-control {
@@ -355,18 +375,20 @@ input:focus, select:focus {
 .quick-btn {
   width: 100%;
   text-align: center;
-  padding: 4px 10px;
+  padding: 6px 10px;
   font-size: 11px;
-  border: 1px solid var(--border-color);
-  background: #f8fafc;
-  border-radius: 4px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  color: #666;
 }
 
 .quick-btn:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  border-color: #667eea;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .legends-container {
@@ -382,9 +404,10 @@ input:focus, select:focus {
 .legend-section h3 {
   font-size: 13px;
   margin-bottom: 10px;
-  color: #111;
-  border-left: 3px solid var(--primary-color);
+  color: #333;
+  border-left: 3px solid #667eea;
   padding-left: 8px;
+  font-weight: 600;
 }
 
 .legend-item {
@@ -435,15 +458,16 @@ input:focus, select:focus {
 
   gap: 6px;
 
-  padding: 8px;
+  padding: 10px;
 
-  background: white;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 8px;
 
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 
   z-index: 9999;
 

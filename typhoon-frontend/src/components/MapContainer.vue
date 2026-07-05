@@ -377,14 +377,18 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #f0f2f5;
+  background: linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #0f2027 100%);
   overflow: hidden;
 }
 .typhoon-tooltip {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #1890ff;
-  border-radius: 4px;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  padding: 12px 16px;
+  color: #333;
 }
 </style>
