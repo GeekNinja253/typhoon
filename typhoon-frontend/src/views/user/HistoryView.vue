@@ -700,15 +700,21 @@ onMounted(() => {
 
 .details-table-container {
   margin-top: 10px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .details-table {
   min-width: 700px;
+  width: 100%;
 }
 
 .details-table th {
   color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(12, 25, 41, 0.95);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .modal-footer {

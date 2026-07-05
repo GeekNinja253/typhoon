@@ -12,110 +12,138 @@
       <h2>🌪 预警报告管理</h2>
     </div>
 
-    <div class="main-content">
-      <!-- 左侧：添加预警位置 -->
-      <div class="left-panel">
-        <div class="panel-card">
-          <h3 class="card-title">添加预警位置</h3>
-          
-          <div class="form-group">
-            <label>选择城市</label>
-            <select v-model="formData.cityName" @change="onCityChange" class="city-select">
-              <option value="">请选择城市</option>
-              <option v-for="city in cities" :key="city.name" :value="city.name">
-                {{ city.name }}
-              </option>
-              <option value="custom">自定义位置</option>
-            </select>
-          </div>
-
-          <div v-if="formData.cityName === 'custom'" class="custom-location">
-            <div class="form-row">
-              <div class="form-group half">
-                <label>纬度</label>
-                <input type="number" v-model="formData.latitude" step="0.0001" />
-              </div>
-              <div class="form-group half">
-                <label>经度</label>
-                <input type="number" v-model="formData.longitude" step="0.0001" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>时间范围</label>
-            <div class="form-row">
-              <div class="form-group half">
-                <label class="small-label">开始时间</label>
-                <input type="datetime-local" v-model="formData.startTime" />
-              </div>
-              <div class="form-group half">
-                <label class="small-label">结束时间</label>
-                <input type="datetime-local" v-model="formData.endTime" />
-              </div>
-            </div>
-          </div>
-
-          <button class="btn btn-primary" @click="addSubscription">添加预警订阅</button>
+    <div class="stats-section">
+      <div class="stat-card stat-alerts">
+        <div class="stat-icon-wrap">
+          <span class="stat-icon">🔔</span>
         </div>
-
-        <!-- 已订阅列表 -->
-        <div class="panel-card clickable-card" @click="openSubscriptionModal">
-          <h3 class="card-title">已订阅列表</h3>
-          <div class="card-summary">
-            <span class="summary-count">{{ subscriptions.length }} 个订阅</span>
-            <span class="summary-hint">点击查看详情 →</span>
-          </div>
-          <div v-if="subscriptions.length === 0" class="empty-state">
-            <p>暂无订阅</p>
-          </div>
-          <div v-else class="subscription-list">
-            <div v-for="sub in subscriptions.slice(0, 3)" :key="sub.id" class="subscription-item">
-              <div class="sub-info">
-                <span class="sub-city">{{ sub.cityName || '自定义位置' }}</span>
-                <span class="status-dot" :class="sub.status === 1 ? 'active' : 'inactive'"></span>
-              </div>
-              <div class="sub-time">{{ formatDateTime(sub.startTime) }} ~ {{ formatDateTime(sub.endTime) }}</div>
-            </div>
-            <div v-if="subscriptions.length > 3" class="more-hint">
-              还有 {{ subscriptions.length - 3 }} 个订阅...
-            </div>
-          </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ reports.length }}</div>
+          <div class="stat-label">预警记录</div>
+          <div class="stat-sub">未读 {{ unreadCount }} 条</div>
+        </div>
+        <div class="stat-trend" :class="unreadCount > 0 ? 'positive' : 'neutral'">
+          {{ unreadCount > 0 ? '⚠' : '✓' }}
         </div>
       </div>
 
-      <!-- 右侧：预警记录 -->
-      <div class="right-panel">
-        <div class="panel-card clickable-card" @click="openReportModal">
+      <div class="stat-card stat-subscriptions">
+        <div class="stat-icon-wrap">
+          <span class="stat-icon">📍</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ subscriptions.length }}</div>
+          <div class="stat-label">已订阅位置</div>
+          <div class="stat-sub">{{ activeSubscriptionCount }} 个启用中</div>
+        </div>
+        <div class="stat-trend neutral">—</div>
+      </div>
+
+      <div class="stat-card stat-risk">
+        <div class="stat-icon-wrap">
+          <span class="stat-icon">🌪</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ highRiskCount }}</div>
+          <div class="stat-label">高风险预警</div>
+          <div class="stat-sub">需要关注</div>
+        </div>
+        <div class="stat-trend" :class="highRiskCount > 0 ? 'danger' : 'positive'">
+          {{ highRiskCount > 0 ? '!' : '-' }}
+        </div>
+      </div>
+
+      <div class="stat-card stat-recent">
+        <div class="stat-icon-wrap">
+          <span class="stat-icon">⏱</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ recentHours }}</div>
+          <div class="stat-label">最近预警</div>
+          <div class="stat-sub">{{ recentHours > 0 ? `${recentHours}小时前` : '刚刚' }}</div>
+        </div>
+        <div class="stat-trend neutral">—</div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="left-panel">
+        <div class="panel-card clickable-card" @click="openAddSubscriptionModal">
           <div class="card-header">
-            <h3 class="card-title">预警记录</h3>
-            <div class="header-actions">
-              <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }} 条未读</span>
+            <h3 class="card-title">➕ 添加预警位置</h3>
+          </div>
+          <div class="add-card-content">
+            <div class="add-circle">
+              <span class="add-symbol">+</span>
+            </div>
+            <div class="add-info">
+              <p class="add-title">订阅新位置</p>
+              <p class="add-desc">选择城市或输入自定义坐标，设置预警时间范围</p>
             </div>
           </div>
-          <div class="card-summary">
-            <span class="summary-count">{{ reports.length }} 条记录</span>
-            <span class="summary-hint">点击查看详情 →</span>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-header">
+            <h3 class="card-title">📍 已订阅列表</h3>
+            <button class="btn btn-small" @click="openSubscriptionModal">查看全部</button>
           </div>
-          <div v-if="reports.length === 0" class="empty-state">
-            <p>暂无预警记录</p>
+          <div v-if="subscriptions.length === 0" class="empty-state">
+            <span class="empty-icon">📌</span>
+            <p>暂无订阅位置</p>
+            <button class="btn btn-primary" @click="openAddSubscriptionModal">立即添加</button>
           </div>
-          <div v-else class="report-list">
-            <div v-for="report in reports.slice(0, 3)" :key="report.id" class="report-item">
-              <div class="report-content">
-                <div class="report-header">
-                  <span class="level-badge level-{{ report.level }}">{{ report.level }}级</span>
-                  <span class="report-time">{{ formatDateTime(report.createTime) }}</span>
-                </div>
-                <div class="report-city">{{ report.cityName || '未知位置' }}</div>
-                <div class="report-meta">
-                  <span>距离: {{ report.distance }} km</span>
-                  <span class="status-dot" :class="report.status === 0 ? 'unread' : 'read'"></span>
+          <div v-else class="subscription-list">
+            <div v-for="sub in subscriptions.slice(0, 4)" :key="sub.id" class="subscription-item">
+              <div class="sub-left">
+                <span class="location-icon">📍</span>
+                <div class="sub-info">
+                  <span class="sub-city">{{ sub.cityName || '自定义位置' }}</span>
+                  <span class="sub-coords">{{ sub.latitude?.toFixed(2) }}, {{ sub.longitude?.toFixed(2) }}</span>
                 </div>
               </div>
+              <span class="status-badge" :class="sub.status === 1 ? 'status-active' : 'status-inactive'">
+                {{ sub.status === 1 ? '已启用' : '已停用' }}
+              </span>
             </div>
-            <div v-if="reports.length > 3" class="more-hint">
-              还有 {{ reports.length - 3 }} 条记录...
+            <div v-if="subscriptions.length > 4" class="more-hint clickable" @click="openSubscriptionModal">
+              查看全部 {{ subscriptions.length }} 个订阅 →
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+      <div class="right-panel">
+        <div class="panel-card">
+          <div class="card-header">
+            <h3 class="card-title">🔔 预警记录</h3>
+            <div class="header-actions">
+              <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }} 条未读</span>
+              <button class="btn btn-small" @click="openReportModal">查看全部</button>
+            </div>
+          </div>
+          <div v-if="reports.length === 0" class="empty-state">
+            <span class="empty-icon">🔕</span>
+            <p>暂无预警记录</p>
+            <p class="empty-sub">订阅位置后，当台风接近时会收到预警通知</p>
+          </div>
+          <div v-else class="report-list">
+            <div v-for="report in reports.slice(0, 5)" :key="report.id" class="report-item" :class="{ unread: report.status === 0 }" @click="openReportModal">
+              <div class="report-left">
+                <span class="level-badge level-{{ report.level }}">{{ report.level }}级</span>
+                <div class="report-info">
+                  <div class="report-city">{{ report.cityName || '未知位置' }}</div>
+                  <div class="report-meta">
+                    <span>距离: {{ report.distance }} km</span>
+                    <span class="report-time">{{ formatDateTime(report.createTime) }}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="status-dot" :class="report.status === 0 ? 'unread' : 'read'"></span>
+            </div>
+            <div v-if="reports.length > 5" class="more-hint clickable" @click="openReportModal">
+              查看全部 {{ reports.length }} 条记录 →
             </div>
           </div>
         </div>
@@ -234,15 +262,24 @@
       @view-report="viewReport"
       @delete-report="deleteReport"
     />
+
+    <!-- 添加订阅弹窗 -->
+    <AddSubscriptionModal
+      :visible="addSubscriptionModalVisible"
+      :cities="cities"
+      @close="closeAddSubscriptionModal"
+      @add="addSubscription"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import SubscriptionModal from '@/components/SubscriptionModal.vue';
 import ReportModal from '@/components/ReportModal.vue';
+import AddSubscriptionModal from '@/components/AddSubscriptionModal.vue';
 
 const router = useRouter();
 const cities = ref<any[]>([]);
@@ -253,13 +290,22 @@ const selectedReport = ref<any>(null);
 
 const subscriptionModalVisible = ref(false);
 const reportModalVisible = ref(false);
+const addSubscriptionModalVisible = ref(false);
 
-const formData = ref({
-  cityName: '',
-  latitude: 22.5431,
-  longitude: 114.0579,
-  startTime: '',
-  endTime: ''
+const activeSubscriptionCount = computed(() => {
+  return subscriptions.value.filter(s => s.status === 1).length;
+});
+
+const highRiskCount = computed(() => {
+  return reports.value.filter(r => r.level >= 3).length;
+});
+
+const recentHours = computed(() => {
+  if (reports.value.length === 0) return 0;
+  const latest = new Date(Math.max(...reports.value.map(r => new Date(r.createTime).getTime())));
+  const now = new Date();
+  const diffHours = Math.floor((now.getTime() - latest.getTime()) / (1000 * 60 * 60));
+  return diffHours;
 });
 
 // 修改订阅相关
@@ -315,6 +361,16 @@ function openReportModal() {
 // 关闭预警记录弹窗
 function closeReportModal() {
   reportModalVisible.value = false;
+}
+
+// 打开添加订阅弹窗
+function openAddSubscriptionModal() {
+  addSubscriptionModalVisible.value = true;
+}
+
+// 关闭添加订阅弹窗
+function closeAddSubscriptionModal() {
+  addSubscriptionModalVisible.value = false;
 }
 
 // 全选/取消全选
@@ -383,54 +439,20 @@ async function loadReports() {
   }
 }
 
-function onCityChange() {
-  if (formData.value.cityName && formData.value.cityName !== 'custom') {
-    const city = cities.value.find(c => c.name === formData.value.cityName);
-    if (city) {
-      formData.value.latitude = city.latitude;
-      formData.value.longitude = city.longitude;
-    }
-  }
-}
-
-async function addSubscription() {
+async function addSubscription(data: { cityName: string | null; latitude: number; longitude: number; startTime: string; endTime: string }) {
   try {
-    // 表单验证
-    if (!formData.value.cityName && (!formData.value.latitude || !formData.value.longitude)) {
-      alert('请选择城市或填写自定义位置');
-      return;
-    }
-    
-    if (!formData.value.startTime) {
-      alert('请选择开始时间');
-      return;
-    }
-    
-    if (!formData.value.endTime) {
-      alert('请选择结束时间');
-      return;
-    }
-    
     const payload = {
-      cityName: formData.value.cityName === 'custom' ? null : formData.value.cityName,
-      latitude: formData.value.latitude,
-      longitude: formData.value.longitude,
-      startTime: new Date(formData.value.startTime).toISOString().slice(0, 19).replace('T', ' '),
-      endTime: new Date(formData.value.endTime).toISOString().slice(0, 19).replace('T', ' ')
+      cityName: data.cityName,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      startTime: data.startTime,
+      endTime: data.endTime
     };
     
     await axios.post('http://localhost:8080/api/alert/subscription', payload);
     alert('订阅成功');
     loadSubscriptions();
-    
-    // 重置表单
-    formData.value = {
-      cityName: '',
-      latitude: 22.5431,
-      longitude: 114.0579,
-      startTime: '',
-      endTime: ''
-    };
+    closeAddSubscriptionModal();
   } catch (error) {
     console.error('添加订阅失败', error);
     alert('添加订阅失败');
@@ -682,8 +704,103 @@ function goAnalysis(report: any) {
   letter-spacing: 1px;
 }
 
-.main-content {
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.stat-alerts .stat-icon-wrap {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.stat-subscriptions .stat-icon-wrap {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.stat-risk .stat-icon-wrap {
+  background: rgba(255, 197, 61, 0.15);
+}
+
+.stat-recent .stat-icon-wrap {
+  background: rgba(0, 201, 255, 0.15);
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2px;
+}
+
+.stat-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.stat-trend {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stat-trend.positive {
+  color: #32cd32;
+}
+
+.stat-trend.danger {
+  color: #ff6b6b;
+}
+
+.stat-trend.neutral {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
@@ -692,7 +809,16 @@ function goAnalysis(report: any) {
 }
 
 .left-panel, .right-panel {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-panel {
+  gap: 24px;
+}
+
+.right-panel {
+  min-height: 100%;
 }
 
 .panel-card {
@@ -704,6 +830,13 @@ function goAnalysis(report: any) {
   padding: 28px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
+}
+
+.right-panel .panel-card {
+  flex-grow: 1;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-card:hover {
@@ -721,7 +854,20 @@ function goAnalysis(report: any) {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
 }
 
-.card-summary {
+.add-icon {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.1);
+  text-align: center;
+  margin-top: 16px;
+  transition: all 0.3s ease;
+}
+
+.clickable-card:hover .add-icon {
+  color: rgba(102, 126, 234, 0.5);
+  transform: scale(1.1);
+}
+
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -991,8 +1137,9 @@ input::placeholder, select::placeholder {
 }
 
 .report-list {
-  max-height: 550px;
+  flex-grow: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .report-list::-webkit-scrollbar,
@@ -1300,5 +1447,271 @@ input::placeholder, select::placeholder {
 .modal-footer-right {
   display: flex;
   gap: 12px;
+}
+
+.add-card-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.add-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px dashed rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.clickable-card:hover .add-circle {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+  transform: scale(1.1);
+}
+
+.add-symbol {
+  font-size: 32px;
+  color: rgba(102, 126, 234, 0.6);
+  font-weight: 300;
+}
+
+.clickable-card:hover .add-symbol {
+  color: rgba(102, 126, 234, 1);
+}
+
+.add-info {
+  flex: 1;
+}
+
+.add-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.add-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.sub-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.location-icon {
+  font-size: 18px;
+}
+
+.sub-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-coords {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background: rgba(50, 205, 50, 0.2);
+  color: #32cd32;
+  border: 1px solid rgba(50, 205, 50, 0.3);
+}
+
+.status-inactive {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+.more-hint.clickable {
+  cursor: pointer;
+  color: rgba(102, 126, 234, 0.8);
+}
+
+.more-hint.clickable:hover {
+  color: #667eea;
+}
+
+.level-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.level-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.level-bar-label {
+  width: 40px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.level-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.level-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.level-bar-fill.level-1 {
+  background: linear-gradient(90deg, #95de64, #32cd32);
+}
+
+.level-bar-fill.level-2 {
+  background: linear-gradient(90deg, #ffc107, #ff9800);
+}
+
+.level-bar-fill.level-3 {
+  background: linear-gradient(90deg, #ff9800, #ff6b6b);
+}
+
+.level-bar-fill.level-4 {
+  background: linear-gradient(90deg, #ff6b6b, #e91e63);
+}
+
+.level-bar-fill.level-5 {
+  background: linear-gradient(90deg, #e91e63, #9c27b0);
+}
+
+.level-bar-count {
+  width: 30px;
+  text-align: right;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.trend-chart {
+  padding: 20px 0;
+}
+
+.chart-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 150px;
+  padding: 0 10px;
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.chart-bar {
+  width: 32px;
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s ease;
+  min-height: 4px;
+}
+
+.chart-bar.current {
+  background: linear-gradient(180deg, #667eea, #764ba2);
+}
+
+.chart-bar:hover {
+  background: rgba(102, 126, 234, 0.6);
+}
+
+.chart-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  background: #667eea;
+  border-radius: 50%;
+}
+
+.report-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.report-info {
+  flex: 1;
+}
+
+.report-item .report-header {
+  margin-bottom: 8px;
+}
+
+.report-item .report-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.report-item.unread {
+  background: rgba(255, 107, 107, 0.05);
+  border-color: rgba(255, 107, 107, 0.15);
+}
+
+.report-item.unread .report-city {
+  color: #ff6b6b;
 }
 </style>

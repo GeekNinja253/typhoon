@@ -2,7 +2,7 @@
   <div v-if="visible" class="modal-overlay" @click="handleClose">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <div class="header-icon">📊</div>
+        <div class="header-icon">🔔</div>
         <h3 class="modal-title">预警记录</h3>
         <div class="header-actions">
           <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }} 条未读</span>
