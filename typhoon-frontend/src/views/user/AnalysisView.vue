@@ -1,76 +1,125 @@
 <template>
   <div class="analysis-view">
+    <div class="bg-animation"></div>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
     <div class="page-header">
-      <button class="back-btn" @click="goBack">← 返回预警报告</button>
-      <h2>台风预警详细分析</h2>
+      <button class="back-btn" @click="goBack">
+        <span class="back-icon">←</span>
+        <span>返回预警报告</span>
+      </button>
+      <h2>🌪 台风预警详细分析</h2>
     </div>
 
     <div class="analysis-container">
-      <!-- ① 基本信息 -->
       <div class="section basic-info">
-        <h3 class="section-title">① 基本信息</h3>
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <h3 class="section-title">基本信息</h3>
+        </div>
         <div class="info-grid">
-          <div class="info-item">
-            <span class="label">预警等级</span>
-            <span class="value level-badge level-{{ report.level }}">{{ report.level }}级</span>
+          <div class="info-card">
+            <span class="info-icon">⚠️</span>
+            <div class="info-content">
+              <span class="info-label">预警等级</span>
+              <span class="info-value level-badge level-{{ report.level }}">{{ report.level }}级</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="label">目标城市</span>
-            <span class="value">{{ report.cityName || '自定义位置' }}</span>
+          <div class="info-card">
+            <span class="info-icon">🏙️</span>
+            <div class="info-content">
+              <span class="info-label">目标城市</span>
+              <span class="info-value">{{ report.cityName || '自定义位置' }}</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="label">城市坐标</span>
-            <span class="value">{{ formatCoord(report.latitude) }}, {{ formatCoord(report.longitude) }}</span>
+          <div class="info-card">
+            <span class="info-icon">📍</span>
+            <div class="info-content">
+              <span class="info-label">城市坐标</span>
+              <span class="info-value">{{ formatCoord(report.latitude) }}, {{ formatCoord(report.longitude) }}</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="label">距离台风</span>
-            <span class="value">{{ report.distance }} km</span>
+          <div class="info-card">
+            <span class="info-icon">📏</span>
+            <div class="info-content">
+              <span class="info-label">距离台风</span>
+              <span class="info-value">{{ report.distance }} km</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="label">预警时间</span>
-            <span class="value">{{ formatDateTime(report.createTime) }}</span>
+          <div class="info-card">
+            <span class="info-icon">🕐</span>
+            <div class="info-content">
+              <span class="info-label">预警时间</span>
+              <span class="info-value">{{ formatDateTime(report.createTime) }}</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="label">预计到达</span>
-            <span class="value">{{ formatDateTime(report.triggerTime) }}</span>
+          <div class="info-card">
+            <span class="info-icon">⏱️</span>
+            <div class="info-content">
+              <span class="info-label">预计到达</span>
+              <span class="info-value">{{ formatDateTime(report.triggerTime) }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ② 地图（风圈+城市位置） -->
       <div class="section map-section">
-        <h3 class="section-title">② 台风风圈影响地图</h3>
+        <div class="section-header">
+          <div class="section-icon">🗺️</div>
+          <h3 class="section-title">台风风圈影响地图</h3>
+        </div>
         <div class="map-wrapper">
           <div ref="miniMap" class="mini-map"></div>
           <div class="map-info">
             <div class="wind-circle legend">
-              <span class="legend-item circle-7">7级风圈 ({{ windCircles.level7.radius }} km)</span>
-              <span class="legend-item circle-10">10级风圈 ({{ windCircles.level10.radius }} km)</span>
-              <span class="legend-item circle-12">12级风圈 ({{ windCircles.level12.radius }} km)</span>
+              <span class="legend-item circle-7">
+                <span class="legend-dot" style="background: #32cd32;"></span>
+                7级风圈 ({{ windCircles.level7.radius }} km)
+              </span>
+              <span class="legend-item circle-10">
+                <span class="legend-dot" style="background: #ffa500;"></span>
+                10级风圈 ({{ windCircles.level10.radius }} km)
+              </span>
+              <span class="legend-item circle-12">
+                <span class="legend-dot" style="background: #ff0000;"></span>
+                12级风圈 ({{ windCircles.level12.radius }} km)
+              </span>
             </div>
             <div class="impact-status">
-              <span v-if="isInCircle7" class="status-7">✓ 在7级风圈内</span>
-              <span v-if="isInCircle10" class="status-10">✓ 在10级风圈内</span>
-              <span v-if="isInCircle12" class="status-12">✓ 在12级风圈内</span>
+              <span v-if="isInCircle7" class="status-badge status-7">✓ 在7级风圈内</span>
+              <span v-if="isInCircle10" class="status-badge status-10">✓ 在10级风圈内</span>
+              <span v-if="isInCircle12" class="status-badge status-12">✓ 在12级风圈内</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ③ 风险等级卡 -->
       <div class="section risk-card">
-        <h3 class="section-title">③ 综合风险评估</h3>
+        <div class="section-header">
+          <div class="section-icon">📊</div>
+          <h3 class="section-title">综合风险评估</h3>
+        </div>
         <div class="risk-level-card level-{{ overallRisk }}">
-          <div class="risk-icon">{{ getRiskIcon(overallRisk) }}</div>
-          <div class="risk-level">{{ getRiskText(overallRisk) }}</div>
-          <div class="risk-score">{{ riskScore.toFixed(1) }}</div>
+          <div class="risk-header">
+            <div class="risk-icon">{{ getRiskIcon(overallRisk) }}</div>
+            <div class="risk-info">
+              <div class="risk-level">{{ getRiskText(overallRisk) }}</div>
+              <div class="risk-score">{{ riskScore.toFixed(1) }}</div>
+            </div>
+          </div>
+          <div class="risk-bar">
+            <div class="risk-bar-fill" :style="{ width: riskScore + '%' }"></div>
+          </div>
           <div class="risk-desc">{{ getRiskDesc(overallRisk) }}</div>
         </div>
       </div>
 
-      <!-- ④ 风圈影响分析表格 -->
       <div class="section wind-table">
-        <h3 class="section-title">④ 风圈影响详细分析</h3>
+        <div class="section-header">
+          <div class="section-icon">📈</div>
+          <h3 class="section-title">风圈影响详细分析</h3>
+        </div>
         <table class="analysis-table">
           <thead>
             <tr>
@@ -83,80 +132,109 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr class="table-row">
               <td class="level-cell level-7">7级风圈</td>
               <td>{{ windCircles.level7.radius }}</td>
               <td>{{ windCircles.level7.area }}</td>
               <td>17.2-24.4 m/s</td>
-              <td>轻度影响</td>
-              <td :class="isInCircle7 ? 'in-circle' : 'out-circle'">{{ isInCircle7 ? '是' : '否' }}</td>
+              <td><span class="impact-tag mild">轻度影响</span></td>
+              <td :class="isInCircle7 ? 'in-circle' : 'out-circle'">
+                <span :class="isInCircle7 ? 'status-check' : 'status-cross'">
+                  {{ isInCircle7 ? '✓' : '✗' }}
+                </span>
+              </td>
             </tr>
-            <tr>
+            <tr class="table-row">
               <td class="level-cell level-10">10级风圈</td>
               <td>{{ windCircles.level10.radius }}</td>
               <td>{{ windCircles.level10.area }}</td>
               <td>24.5-32.6 m/s</td>
-              <td>中度影响</td>
-              <td :class="isInCircle10 ? 'in-circle' : 'out-circle'">{{ isInCircle10 ? '是' : '否' }}</td>
+              <td><span class="impact-tag moderate">中度影响</span></td>
+              <td :class="isInCircle10 ? 'in-circle' : 'out-circle'">
+                <span :class="isInCircle10 ? 'status-check' : 'status-cross'">
+                  {{ isInCircle10 ? '✓' : '✗' }}
+                </span>
+              </td>
             </tr>
-            <tr>
+            <tr class="table-row">
               <td class="level-cell level-12">12级风圈</td>
               <td>{{ windCircles.level12.radius }}</td>
               <td>{{ windCircles.level12.area }}</td>
               <td>≥32.7 m/s</td>
-              <td>重度影响</td>
-              <td :class="isInCircle12 ? 'in-circle' : 'out-circle'">{{ isInCircle12 ? '是' : '否' }}</td>
+              <td><span class="impact-tag severe">重度影响</span></td>
+              <td :class="isInCircle12 ? 'in-circle' : 'out-circle'">
+                <span :class="isInCircle12 ? 'status-check' : 'status-cross'">
+                  {{ isInCircle12 ? '✓' : '✗' }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- ⑤⑥ 雷达图 + 指标卡 -->
       <div class="section charts-row">
         <div class="chart-box">
-          <h3 class="section-title">⑤ 综合风险雷达图</h3>
+          <div class="section-header">
+            <div class="section-icon">🎯</div>
+            <h3 class="section-title">综合风险雷达图</h3>
+          </div>
           <div ref="radarChart" class="radar-chart"></div>
         </div>
         <div class="metrics-box">
-          <h3 class="section-title">⑥ 关键指标</h3>
+          <div class="section-header">
+            <div class="section-icon">⚙️</div>
+            <h3 class="section-title">关键指标</h3>
+          </div>
           <div class="metrics-grid">
             <div class="metric-card">
-              <div class="metric-icon">💨</div>
-              <div class="metric-label">风速</div>
-              <div class="metric-value">{{ currentFrame.windSpeed?.toFixed(1) || '--' }}</div>
-              <div class="metric-unit">m/s</div>
+              <div class="metric-icon blue">💨</div>
+              <div class="metric-info">
+                <div class="metric-label">风速</div>
+                <div class="metric-value">{{ currentFrame.windSpeed?.toFixed(1) || '--' }}</div>
+                <div class="metric-unit">m/s</div>
+              </div>
             </div>
             <div class="metric-card">
-              <div class="metric-icon">📊</div>
-              <div class="metric-label">风力等级</div>
-              <div class="metric-value">{{ currentFrame.grade || '--' }}</div>
-              <div class="metric-unit">级</div>
+              <div class="metric-icon purple">📊</div>
+              <div class="metric-info">
+                <div class="metric-label">风力等级</div>
+                <div class="metric-value">{{ currentFrame.grade || '--' }}</div>
+                <div class="metric-unit">级</div>
+              </div>
             </div>
             <div class="metric-card">
-              <div class="metric-icon">🌡️</div>
-              <div class="metric-label">中心气压</div>
-              <div class="metric-value">{{ currentFrame.pressure?.toFixed(0) || '--' }}</div>
-              <div class="metric-unit">hPa</div>
+              <div class="metric-icon orange">🌡️</div>
+              <div class="metric-info">
+                <div class="metric-label">中心气压</div>
+                <div class="metric-value">{{ currentFrame.pressure?.toFixed(0) || '--' }}</div>
+                <div class="metric-unit">hPa</div>
+              </div>
             </div>
             <div class="metric-card">
-              <div class="metric-icon">📍</div>
-              <div class="metric-label">台风位置</div>
-              <div class="metric-value">{{ typhoonPosition.lat?.toFixed(2) }}°N</div>
-              <div class="metric-value">{{ typhoonPosition.lng?.toFixed(2) }}°E</div>
+              <div class="metric-icon green">📍</div>
+              <div class="metric-info">
+                <div class="metric-label">台风位置</div>
+                <div class="metric-value">{{ typhoonPosition.lat?.toFixed(2) }}°N</div>
+                <div class="metric-value small">{{ typhoonPosition.lng?.toFixed(2) }}°E</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ⑦ 风险趋势折线图 -->
       <div class="section trend-chart">
-        <h3 class="section-title">⑦ 风险等级趋势预测</h3>
+        <div class="section-header">
+          <div class="section-icon">📉</div>
+          <h3 class="section-title">风险等级趋势预测</h3>
+        </div>
         <div ref="trendChart" class="trend-chart-container"></div>
       </div>
 
-      <!-- ⑧ 系统分析建议 -->
       <div class="section suggestions">
-        <h3 class="section-title">⑧ 系统分析建议</h3>
+        <div class="section-header">
+          <div class="section-icon">💡</div>
+          <h3 class="section-title">系统分析建议</h3>
+        </div>
         <div class="suggestion-list">
           <div v-for="(suggestion, index) in suggestions" :key="index" class="suggestion-item">
             <span class="suggestion-icon">{{ suggestion.icon }}</span>
@@ -199,7 +277,6 @@ const currentFrame = ref<any>({
 
 const typhoonPosition = ref({ lat: 20.5, lng: 125.3 });
 
-// 风圈数据
 const windCircles = computed(() => {
   const grade = currentFrame.value.grade || 12;
   return {
@@ -218,7 +295,6 @@ const windCircles = computed(() => {
   };
 });
 
-// 计算城市是否在风圈内
 const isInCircle7 = computed(() => {
   return report.value.distance <= windCircles.value.level7.radius;
 });
@@ -231,7 +307,6 @@ const isInCircle12 = computed(() => {
   return report.value.distance <= windCircles.value.level12.radius;
 });
 
-// 综合风险评分 (0-100)
 const riskScore = computed(() => {
   let score = 0;
   if (isInCircle12.value) score += 50;
@@ -244,7 +319,6 @@ const riskScore = computed(() => {
   return Math.min(100, score);
 });
 
-// 综合风险等级
 const overallRisk = computed(() => {
   if (riskScore.value >= 80) return 'critical';
   if (riskScore.value >= 60) return 'high';
@@ -252,7 +326,6 @@ const overallRisk = computed(() => {
   return 'low';
 });
 
-// 图表引用
 const radarChart = ref<HTMLElement | null>(null);
 const trendChart = ref<HTMLElement | null>(null);
 const miniMap = ref<HTMLElement | null>(null);
@@ -261,7 +334,6 @@ let radarChartInstance: echarts.ECharts | null = null;
 let trendChartInstance: echarts.ECharts | null = null;
 let cesiumViewer: Cesium.Viewer | null = null;
 
-// 建议列表
 const suggestions = computed(() => {
   const list = [];
   
@@ -327,13 +399,13 @@ function formatCoord(value: number | undefined): string {
   return `${value.toFixed(4)}°`;
 }
 
-// 初始化雷达图
 function initRadarChart() {
   if (!radarChart.value) return;
   
   radarChartInstance = echarts.init(radarChart.value);
   
   const option = {
+    backgroundColor: 'transparent',
     radar: {
       indicator: [
         { name: '风力等级', max: 17 },
@@ -346,11 +418,22 @@ function initRadarChart() {
       shape: 'polygon',
       splitNumber: 5,
       axisName: {
-        color: '#333'
+        color: '#fff',
+        fontSize: 12
       },
       splitLine: {
         lineStyle: {
-          color: '#ddd'
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
+      },
+      splitArea: {
+        areaStyle: {
+          color: ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)']
+        }
+      },
+      axisLine: {
+        lineStyle: {
+          color: 'rgba(255, 255, 255, 0.2)'
         }
       }
     },
@@ -367,12 +450,18 @@ function initRadarChart() {
         ],
         name: '风险指标',
         areaStyle: {
-          color: overallRisk.value === 'critical' ? 'rgba(255, 0, 0, 0.3)' :
-                  overallRisk.value === 'high' ? 'rgba(255, 165, 0, 0.3)' :
-                  overallRisk.value === 'medium' ? 'rgba(255, 255, 0, 0.3)' :
-                  'rgba(0, 255, 0, 0.3)'
+          color: overallRisk.value === 'critical' ? 'rgba(255, 0, 0, 0.4)' :
+                  overallRisk.value === 'high' ? 'rgba(255, 165, 0, 0.4)' :
+                  overallRisk.value === 'medium' ? 'rgba(255, 255, 0, 0.4)' :
+                  'rgba(0, 255, 0, 0.4)'
         },
         lineStyle: {
+          color: overallRisk.value === 'critical' ? '#ff0000' :
+                 overallRisk.value === 'high' ? '#ffa500' :
+                 overallRisk.value === 'medium' ? '#ffff00' : '#00ff00',
+          width: 2
+        },
+        itemStyle: {
           color: overallRisk.value === 'critical' ? '#ff0000' :
                  overallRisk.value === 'high' ? '#ffa500' :
                  overallRisk.value === 'medium' ? '#ffff00' : '#00ff00'
@@ -384,13 +473,11 @@ function initRadarChart() {
   radarChartInstance.setOption(option);
 }
 
-// 初始化趋势图
 function initTrendChart() {
   if (!trendChart.value) return;
   
   trendChartInstance = echarts.init(trendChart.value);
   
-  // 模拟未来趋势数据
   const hours = Array.from({ length: 24 }, (_, i) => i * 6);
   const grades = hours.map((_, i) => Math.max(8, Math.min(16, currentFrame.value.grade + Math.sin(i / 4) * 2)));
   const risks = hours.map((_, i) => {
@@ -399,11 +486,16 @@ function initTrendChart() {
   });
   
   const option = {
+    backgroundColor: 'transparent',
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      textStyle: { color: '#fff' }
     },
     legend: {
-      data: ['风力等级', '风险评分']
+      data: ['风力等级', '风险评分'],
+      textStyle: { color: '#fff' }
     },
     grid: {
       left: '3%',
@@ -414,20 +506,32 @@ function initTrendChart() {
     xAxis: {
       type: 'category',
       data: hours.map(h => `${h}h`),
-      name: '预测时间'
+      name: '预测时间',
+      nameTextStyle: { color: '#fff', fontSize: 12 },
+      axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+      axisTick: { show: false }
     },
     yAxis: [
       {
         type: 'value',
         name: '风力等级',
         min: 0,
-        max: 18
+        max: 18,
+        nameTextStyle: { color: '#fff', fontSize: 12 },
+        axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
       },
       {
         type: 'value',
         name: '风险评分',
         min: 0,
-        max: 100
+        max: 100,
+        nameTextStyle: { color: '#fff', fontSize: 12 },
+        axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+        splitLine: { show: false }
       }
     ],
     series: [
@@ -436,8 +540,9 @@ function initTrendChart() {
         type: 'line',
         data: grades,
         smooth: true,
-        lineStyle: { color: '#1890ff' },
-        areaStyle: { color: 'rgba(24, 144, 255, 0.2)' }
+        lineStyle: { color: '#00C9FF', width: 2 },
+        areaStyle: { color: 'rgba(0, 201, 255, 0.2)' },
+        itemStyle: { color: '#00C9FF' }
       },
       {
         name: '风险评分',
@@ -445,8 +550,9 @@ function initTrendChart() {
         yAxisIndex: 1,
         data: risks,
         smooth: true,
-        lineStyle: { color: '#ff4d4f' },
-        areaStyle: { color: 'rgba(255, 77, 79, 0.2)' }
+        lineStyle: { color: '#ff6b6b', width: 2 },
+        areaStyle: { color: 'rgba(255, 107, 107, 0.2)' },
+        itemStyle: { color: '#ff6b6b' }
       }
     ]
   };
@@ -454,7 +560,6 @@ function initTrendChart() {
   trendChartInstance.setOption(option);
 }
 
-// 初始化迷你地图
 function initMiniMap() {
   if (!miniMap.value) return;
   
@@ -478,13 +583,11 @@ function initMiniMap() {
     cesiumViewer.scene.skyAtmosphere.show = false;
   }
   
-  // 台风位置
   const typhoonPos = Cesium.Cartesian3.fromDegrees(
     typhoonPosition.value.lng,
     typhoonPosition.value.lat
   );
   
-  // 台风中心点
   cesiumViewer.entities.add({
     position: typhoonPos,
     point: {
@@ -500,7 +603,6 @@ function initMiniMap() {
     }
   });
   
-  // 7级风圈
   cesiumViewer.entities.add({
     position: typhoonPos,
     ellipse: {
@@ -510,7 +612,6 @@ function initMiniMap() {
     }
   });
   
-  // 10级风圈
   cesiumViewer.entities.add({
     position: typhoonPos,
     ellipse: {
@@ -520,7 +621,6 @@ function initMiniMap() {
     }
   });
   
-  // 12级风圈
   cesiumViewer.entities.add({
     position: typhoonPos,
     ellipse: {
@@ -530,7 +630,6 @@ function initMiniMap() {
     }
   });
   
-  // 城市位置
   if (report.value.latitude && report.value.longitude) {
     const cityPos = Cesium.Cartesian3.fromDegrees(
       report.value.longitude,
@@ -553,7 +652,6 @@ function initMiniMap() {
     });
   }
   
-  // 飞到台风位置
   cesiumViewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(
       typhoonPosition.value.lng,
@@ -565,13 +663,11 @@ function initMiniMap() {
 }
 
 async function loadReportData() {
-  // 优先从sessionStorage读取数据（从地图页或预警报告页传递过来的实时数据）
   const storedData = sessionStorage.getItem('currentAnalysis');
   if (storedData) {
     const data = JSON.parse(storedData);
     report.value = data;
     
-    // 如果没有传递坐标，从消息中解析
     if ((data.latitude === undefined || data.latitude === null) && data.message) {
       const latMatch = data.message.match(/纬度[:\s]*([\d.]+)/);
       const lngMatch = data.message.match(/经度[:\s]*([\d.]+)/);
@@ -579,7 +675,6 @@ async function loadReportData() {
       if (lngMatch) data.longitude = parseFloat(lngMatch[1]);
     }
     
-    // 直接使用传递过来的实时数据
     if (data.typhoonLat !== undefined) {
       typhoonPosition.value.lat = data.typhoonLat;
     }
@@ -596,20 +691,16 @@ async function loadReportData() {
       currentFrame.value.pressure = data.pressure;
     }
     
-    // 清除sessionStorage中的数据
     sessionStorage.removeItem('currentAnalysis');
     return;
   }
   
-  // 如果sessionStorage没有数据，从API获取
   const reportId = route.params.id;
   if (!reportId) return;
   
   try {
     const res = await axios.get(`http://localhost:8080/api/alert/report/detail/${reportId}`);
     report.value = res.data.data;
-    
-    // 从预警消息中解析台风数据
     parseTyphoonData(report.value.message);
     
   } catch (error) {
@@ -620,7 +711,6 @@ async function loadReportData() {
 function parseTyphoonData(message: string) {
   if (!message) return;
   
-  // 从消息中解析经纬度、等级等数据
   const latMatch = message.match(/纬度[:\s]*([\d.]+)/);
   const lngMatch = message.match(/经度[:\s]*([\d.]+)/);
   const gradeMatch = message.match(/等级[:\s]*(\d+)/);
@@ -645,7 +735,6 @@ onMounted(async () => {
   initTrendChart();
   initMiniMap();
   
-  // 窗口大小变化时重新渲染图表
   window.addEventListener('resize', () => {
     radarChartInstance?.resize();
     trendChartInstance?.resize();
@@ -663,202 +752,404 @@ onBeforeUnmount(() => {
 <style scoped>
 .analysis-view {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #0f2027 100%);
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 201, 255, 0.1) 0%, transparent 50%);
+  animation: bgPulse 20s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes bgPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.blob-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  top: -200px;
+  left: -100px;
+  animation: blobMove1 15s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #00C9FF, #92FE9D);
+  bottom: -100px;
+  right: -100px;
+  animation: blobMove2 12s ease-in-out infinite;
+}
+
+@keyframes blobMove1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(100px, 50px); }
+  66% { transform: translate(50px, 100px); }
+}
+
+@keyframes blobMove2 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-80px, -60px); }
+  66% { transform: translate(-40px, -100px); }
 }
 
 .page-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .back-btn {
-  padding: 10px 20px;
-  background: white;
-  border: none;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .back-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.2);
   transform: translateX(-3px);
 }
 
+.back-icon {
+  font-size: 16px;
+}
+
 .page-header h2 {
-  color: white;
-  font-size: 24px;
+  color: #fff;
+  font-size: 28px;
   margin: 0;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .analysis-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.section:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.section-icon {
+  font-size: 24px;
 }
 
 .section-title {
-  font-size: 18px;
-  color: #333;
-  margin: 0 0 20px 0;
-  padding-left: 12px;
-  border-left: 4px solid #1890ff;
+  font-size: 20px;
+  color: #fff;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
 }
 
-/* 基本信息 */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
-.info-item {
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.info-icon {
+  font-size: 28px;
+}
+
+.info-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.info-item .label {
-  font-size: 13px;
-  color: #666;
+.info-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.info-item .value {
+.info-value {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #fff;
 }
 
 .level-badge {
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
 }
 
-.level-1, .level-2 { background: #00d5cb; color: white; }
-.level-3, .level-4 { background: #fcfa00; color: #333; }
-.level-5, .level-6 { background: #fdaa09; color: white; }
-.level-7, .level-8 { background: #fb3320; color: white; }
-.level-9, .level-10 { background: #f600a9; color: white; }
-.level-11, .level-12 { background: #aa0000; color: white; }
+.level-1, .level-2 { background: linear-gradient(135deg, #00d5cb, #00b894); color: white; }
+.level-3, .level-4 { background: linear-gradient(135deg, #fcfa00, #ffe000); color: #333; }
+.level-5, .level-6 { background: linear-gradient(135deg, #fdaa09, #fdcb6e); color: white; }
+.level-7, .level-8 { background: linear-gradient(135deg, #fb3320, #e17055); color: white; }
+.level-9, .level-10 { background: linear-gradient(135deg, #f600a9, #fd79a8); color: white; }
+.level-11, .level-12 { background: linear-gradient(135deg, #aa0000, #d63031); color: white; }
 
-/* 地图 */
 .map-wrapper {
   display: flex;
-  gap: 20px;
+  gap: 24px;
 }
 
 .mini-map {
-  width: 500px;
+  flex: 1;
   height: 400px;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .map-info {
-  flex: 1;
+  width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .legend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .legend-item {
-  padding: 8px 16px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
   font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.circle-7 { background: rgba(50, 205, 50, 0.3); border: 2px solid #32cd32; }
-.circle-10 { background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; }
-.circle-12 { background: rgba(255, 0, 0, 0.3); border: 2px solid #ff0000; }
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
 
 .impact-status {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.status-7 { color: #32cd32; font-weight: 600; }
-.status-10 { color: #ffa500; font-weight: 600; }
-.status-12 { color: #ff0000; font-weight: 600; }
+.status-badge {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
 
-/* 风险等级卡 */
+.status-7 { background: rgba(50, 205, 50, 0.2); color: #32cd32; border: 1px solid rgba(50, 205, 50, 0.3); }
+.status-10 { background: rgba(255, 165, 0, 0.2); color: #ffa500; border: 1px solid rgba(255, 165, 0, 0.3); }
+.status-12 { background: rgba(255, 0, 0, 0.2); color: #ff0000; border: 1px solid rgba(255, 0, 0, 0.3); }
+
 .risk-level-card {
   padding: 32px;
+  border-radius: 16px;
   text-align: center;
-  border-radius: 12px;
 }
 
-.level-critical { background: linear-gradient(135deg, #ff0000, #ff4444); color: white; }
-.level-high { background: linear-gradient(135deg, #ffa500, #ffcc00); color: white; }
-.level-medium { background: linear-gradient(135deg, #ffff00, #ffdd00); color: #333; }
-.level-low { background: linear-gradient(135deg, #00ff00, #44ff44); color: white; }
+.level-critical { background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(255, 68, 68, 0.2)); border: 1px solid rgba(255, 0, 0, 0.3); }
+.level-high { background: linear-gradient(135deg, rgba(255, 165, 0, 0.3), rgba(255, 204, 0, 0.2)); border: 1px solid rgba(255, 165, 0, 0.3); }
+.level-medium { background: linear-gradient(135deg, rgba(255, 255, 0, 0.3), rgba(255, 221, 0, 0.2)); border: 1px solid rgba(255, 255, 0, 0.3); }
+.level-low { background: linear-gradient(135deg, rgba(0, 255, 0, 0.3), rgba(68, 255, 68, 0.2)); border: 1px solid rgba(0, 255, 0, 0.3); }
 
-.risk-icon { font-size: 48px; margin-bottom: 8px; }
-.risk-level { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-.risk-score { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
-.risk-desc { font-size: 14px; opacity: 0.9; }
+.risk-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
 
-/* 表格 */
+.risk-icon {
+  font-size: 56px;
+}
+
+.risk-info {
+  text-align: left;
+}
+
+.risk-level {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.risk-score {
+  font-size: 40px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.risk-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.risk-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00C9FF, #92FE9D);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.risk-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .analysis-table {
   width: 100%;
   border-collapse: collapse;
 }
 
 .analysis-table th, .analysis-table td {
-  padding: 12px;
-  border: 1px solid #eee;
+  padding: 14px;
   text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .analysis-table th {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.05);
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-row {
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .level-cell {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.level-7 { background: rgba(50, 205, 50, 0.15); color: #32cd32; }
+.level-10 { background: rgba(255, 165, 0, 0.15); color: #ffa500; }
+.level-12 { background: rgba(255, 0, 0, 0.15); color: #ff0000; }
+
+.impact-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
 }
 
-.level-7 { background: rgba(50, 205, 50, 0.2); color: #32cd32; }
-.level-10 { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
-.level-12 { background: rgba(255, 0, 0, 0.2); color: #ff0000; }
+.impact-tag.mild { background: rgba(50, 205, 50, 0.2); color: #32cd32; }
+.impact-tag.moderate { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
+.impact-tag.severe { background: rgba(255, 0, 0, 0.2); color: #ff0000; }
 
-.in-circle { color: #ff4d4f; font-weight: 600; }
-.out-circle { color: #52c41a; }
+.status-check {
+  color: #52c41a;
+  font-weight: 700;
+  font-size: 18px;
+}
 
-/* 图表行 */
+.status-cross {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 18px;
+}
+
 .charts-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 .chart-box, .metrics-box {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px;
 }
 
 .radar-chart {
-  height: 300px;
+  height: 320px;
 }
 
 .metrics-grid {
@@ -868,47 +1159,107 @@ onBeforeUnmount(() => {
 }
 
 .metric-card {
-  background: #f5f5f5;
-  padding: 16px;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.metric-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.metric-icon.blue { background: rgba(0, 201, 255, 0.2); }
+.metric-icon.purple { background: rgba(102, 126, 234, 0.2); }
+.metric-icon.orange { background: rgba(255, 197, 61, 0.2); }
+.metric-icon.green { background: rgba(149, 222, 100, 0.2); }
+
+.metric-info {
   text-align: center;
 }
 
-.metric-icon { font-size: 32px; margin-bottom: 8px; }
-.metric-label { font-size: 13px; color: #666; margin-bottom: 4px; }
-.metric-value { font-size: 24px; font-weight: 700; color: #1890ff; }
-.metric-unit { font-size: 12px; color: #999; }
-
-/* 趋势图 */
-.trend-chart-container {
-  height: 300px;
+.metric-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
 }
 
-/* 建议 */
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.metric-value.small {
+  font-size: 18px;
+}
+
+.metric-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+}
+
+.trend-chart-container {
+  height: 320px;
+}
+
 .suggestion-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .suggestion-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
 }
 
-.suggestion-icon { font-size: 20px; }
-.suggestion-text { font-size: 14px; color: #333; line-height: 1.5; }
+.suggestion-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px);
+}
 
-@media (max-width: 768px) {
+.suggestion-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.suggestion-text {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
   .info-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
   .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .info-grid {
     grid-template-columns: 1fr;
   }
   
@@ -917,6 +1268,10 @@ onBeforeUnmount(() => {
   }
   
   .mini-map {
+    width: 100%;
+  }
+  
+  .map-info {
     width: 100%;
   }
 }

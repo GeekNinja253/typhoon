@@ -3,9 +3,9 @@
   --primary-color: #1890ff;
   --bg-color: #f0f2f5;
   --panel-bg: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --border-color: #d9d9d9;
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.15);
   
   --color-td: #10b981;    /* 热带低压 */
   --color-ts: #06b6d4;    /* 热带风暴 */

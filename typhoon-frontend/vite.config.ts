@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       cesium: path.resolve(__dirname, 'node_modules/cesium'),
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   build: {

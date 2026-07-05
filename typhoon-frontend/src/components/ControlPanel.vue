@@ -218,7 +218,7 @@ function setHoursMax() {
 
 .subtitle {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: #666;
 }
 
 .panel-section {
@@ -252,23 +252,24 @@ function setHoursMax() {
 
 label {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: #666;
 }
 
 input, select {
   padding: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d9d9d9;
   border-radius: 4px;
   font-size: 13px;
   outline: none;
+  color: #333;
 }
 
 .input-info {
   padding: 8px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: #666;
   background-color: #f8fafc;
-  border: 1px solid var(--border-color);
+  border: 1px solid #d9d9d9;
   border-radius: 4px;
 }
 
@@ -301,15 +302,18 @@ input:focus, select:focus {
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-small {
   padding: 4px 10px;
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
-}
-.btn-small:hover {
-  background-color: #e6e6e6;
 }
 
 .panel-actions {
@@ -389,7 +393,7 @@ input:focus, select:focus {
   gap: 8px;
   font-size: 12px;
   margin-bottom: 6px;
-  color: var(--text-secondary);
+  color: #666;
 }
 
 .circle {
@@ -409,7 +413,7 @@ input:focus, select:focus {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: #666;
   cursor: pointer;
   user-select: none;
 }

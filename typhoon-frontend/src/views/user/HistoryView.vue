@@ -1,27 +1,59 @@
 <template>
   <div class="history-container">
-    <div class="glass-panel">
-      <div class="header">
+    <div class="bg-animation"></div>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <div class="page-header">
+      <div class="header-left">
         <h2>📜 历史预测记录</h2>
-        <div class="header-actions">
-          <button v-if="!isBatchMode" class="batch-btn" @click="enterBatchMode">批量管理</button>
-          <template v-else>
-            <button class="cancel-btn" @click="exitBatchMode">取消</button>
-            <button class="batch-delete-btn" @click="batchDelete" :disabled="selectedTasks.length === 0">
-              批量删除 ({{ selectedTasks.length }})
-            </button>
-          </template>
-          <button class="back-btn" @click="$router.push('/home')">返回仪表盘</button>
+        <p class="header-subtitle">查看历史台风预测任务及其轨迹分析</p>
+      </div>
+      <div class="header-actions">
+        <button v-if="!isBatchMode" class="btn btn-primary" @click="enterBatchMode">批量管理</button>
+        <template v-else>
+          <button class="btn" @click="exitBatchMode">取消</button>
+          <button class="btn btn-danger" @click="batchDelete" :disabled="selectedTasks.length === 0">
+            批量删除 ({{ selectedTasks.length }})
+          </button>
+        </template>
+        <button class="btn" @click="$router.push('/home')">← 返回首页</button>
+      </div>
+    </div>
+
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ tasks.length }}</div>
+          <div class="stat-label">总预测任务</div>
         </div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔵</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ unreadCount }}</div>
+          <div class="stat-label">未读记录</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ tasks.length - unreadCount }}</div>
+          <div class="stat-label">已读记录</div>
+        </div>
+      </div>
+    </div>
 
+    <div class="glass-panel">
       <div class="table-container">
         <table class="modern-table">
           <thead>
             <tr>
-              <th v-if="isBatchMode">
+              <th v-if="isBatchMode" class="checkbox-th">
                 <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="checkbox-all" />
               </th>
+              <th class="status-th">状态</th>
               <th>任务 ID</th>
               <th>预测时间</th>
               <th>初始经度</th>
@@ -33,21 +65,30 @@
           </thead>
           <tbody>
             <tr v-if="tasks.length === 0">
-              <td :colspan="isBatchMode ? 8 : 7" class="empty-state">暂无预测记录</td>
+              <td :colspan="isBatchMode ? 9 : 8" class="empty-state">
+                <span class="empty-icon">📭</span>
+                <p>暂无预测记录</p>
+              </td>
             </tr>
-            <tr v-for="task in tasks" :key="task.id" class="table-row" :class="{ selected: isBatchMode && selectedTasks.includes(task.id) }">
+            <tr v-for="task in tasks" :key="task.id" class="table-row" :class="{ selected: isBatchMode && selectedTasks.includes(task.id), unread: !readTasks.includes(task.id) }">
               <td v-if="isBatchMode">
                 <input type="checkbox" :checked="selectedTasks.includes(task.id)" @change="toggleSelect(task.id)" class="checkbox-item" />
               </td>
-              <td>#{{ task.id }}</td>
-              <td>{{ new Date(task.createTime).toLocaleString() }}</td>
+              <td>
+                <span v-if="!readTasks.includes(task.id)" class="status-dot unread"></span>
+                <span v-else class="status-dot read"></span>
+              </td>
+              <td><span class="task-id">#{{ task.id }}</span></td>
+              <td>{{ formatDateTime(task.createTime) }}</td>
               <td>{{ task.startLongitude.toFixed(2) }}°</td>
               <td>{{ task.startLatitude.toFixed(2) }}°</td>
-              <td>{{ task.startIntensity }}</td>
+              <td><span class="intensity-badge">{{ task.startIntensity }}</span></td>
               <td>{{ task.startPressure }} hPa</td>
               <td>
-                <button class="view-btn" @click="viewDetails(task.id)">查看轨迹详情</button>
-                <button v-if="!isBatchMode" class="delete-btn" @click="deleteTask(task.id)">删除</button>
+                <div class="action-buttons">
+                  <button class="btn btn-small btn-primary" @click="viewDetails(task.id)">查看轨迹</button>
+                  <button v-if="!isBatchMode" class="btn btn-small btn-danger" @click="deleteTask(task.id)">删除</button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -55,38 +96,45 @@
       </div>
     </div>
 
-    <!-- 轨迹详情模态框 (Glassmorphism) -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content glass-panel">
-        <h3>任务 #{{ selectedTaskId }} - 轨迹预测详情</h3>
-        <button class="close-btn" @click="closeModal">×</button>
-        
-        <div class="details-table-container">
-          <table class="modern-table details-table">
-            <thead>
-              <tr>
-                <th>步长 (Step)</th>
-                <th>预测经度</th>
-                <th>预测纬度</th>
-                <th>预测等级</th>
-                <th>风速 (m/s)</th>
-                <th>气压 (hPa)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loadingDetails">
-                <td colspan="6" class="empty-state">加载中...</td>
-              </tr>
-              <tr v-for="result in selectedResults" :key="result.id" class="table-row">
-                <td>{{ result.stepIndex }}</td>
-                <td>{{ result.predLongitude.toFixed(4) }}°</td>
-                <td>{{ result.predLatitude.toFixed(4) }}°</td>
-                <td>{{ result.predGrade.toFixed(2) }}</td>
-                <td>{{ result.predWindSpeed.toFixed(2) }}</td>
-                <td>{{ result.predPressure.toFixed(2) }}</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="header-icon">📍</div>
+          <h3>任务 #{{ selectedTaskId }} - 轨迹预测详情</h3>
+          <button class="close-btn" @click="closeModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="loadingDetails" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>加载中...</p>
+          </div>
+          <div v-else class="details-table-container">
+            <table class="modern-table details-table">
+              <thead>
+                <tr>
+                  <th>步长 (Step)</th>
+                  <th>预测经度</th>
+                  <th>预测纬度</th>
+                  <th>预测等级</th>
+                  <th>风速 (m/s)</th>
+                  <th>气压 (hPa)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="result in selectedResults" :key="result.id" class="table-row">
+                  <td>{{ result.stepIndex }}</td>
+                  <td>{{ result.predLongitude.toFixed(4) }}°</td>
+                  <td>{{ result.predLatitude.toFixed(4) }}°</td>
+                  <td>{{ result.predGrade.toFixed(2) }}</td>
+                  <td>{{ result.predWindSpeed.toFixed(2) }}</td>
+                  <td>{{ result.predPressure.toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" @click="closeModal">关闭</button>
         </div>
       </div>
     </div>
@@ -94,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const tasks = ref<any[]>([]);
@@ -104,6 +152,23 @@ const selectedResults = ref<any[]>([]);
 const loadingDetails = ref(false);
 const isBatchMode = ref(false);
 const selectedTasks = ref<number[]>([]);
+
+const readTasks = ref<number[]>(JSON.parse(localStorage.getItem('history_read_tasks') || '[]'));
+
+const unreadCount = computed(() => {
+  return tasks.value.filter(task => !readTasks.value.includes(task.id)).length;
+});
+
+function formatDateTime(dateStr: string) {
+  if (!dateStr) return '--';
+  return new Date(dateStr).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 
 const fetchTasks = async () => {
   try {
@@ -115,6 +180,11 @@ const fetchTasks = async () => {
 };
 
 const viewDetails = async (taskId: number) => {
+  if (!readTasks.value.includes(taskId)) {
+    readTasks.value.push(taskId);
+    localStorage.setItem('history_read_tasks', JSON.stringify(readTasks.value));
+  }
+
   selectedTaskId.value = taskId;
   selectedResults.value = [];
   showModal.value = true;
@@ -205,95 +275,179 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 渐变背景 */
 .history-container {
   min-height: 100vh;
-  padding: 40px;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  background-attachment: fixed;
-  background-size: 100% 100%;
-  color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
+  padding: 24px;
+  background: linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #0f2027 100%);
   box-sizing: border-box;
   width: 100%;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* 玻璃拟物化面板 */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 201, 255, 0.1) 0%, transparent 50%);
+  animation: bgPulse 20s ease-in-out infinite;
+  z-index: 0;
 }
 
-.header {
+@keyframes bgPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.blob-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  top: -200px;
+  left: -100px;
+  animation: blobMove1 15s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #00C9FF, #92FE9D);
+  bottom: -100px;
+  right: -100px;
+  animation: blobMove2 12s ease-in-out infinite;
+}
+
+@keyframes blobMove1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(100px, 50px); }
+  66% { transform: translate(50px, 100px); }
+}
+
+@keyframes blobMove2 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-80px, -60px); }
+  66% { transform: translate(-40px, -100px); }
+}
+
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 1px;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .header-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
-.batch-btn {
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  color: #fff;
-  padding: 10px 20px;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+.stats-cards {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
-.batch-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+.stat-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
 }
 
-.cancel-btn {
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
 }
 
-.cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.batch-delete-btn {
-  background: linear-gradient(90deg, #ff6b6b, #ee5253);
-  color: #fff;
-  padding: 10px 20px;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(238, 82, 83, 0.3);
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
 }
 
-.batch-delete-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(238, 82, 83, 0.5);
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.batch-delete-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
 }
 
-.header h2 {
-  margin: 0;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-/* 现代表格设计 */
 .table-container {
   overflow-x: auto;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 400px);
   overflow-y: auto;
 }
 
@@ -305,34 +459,73 @@ onMounted(() => {
 }
 
 .modern-table th, .modern-table td {
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
 }
 
 .modern-table th {
   font-weight: 600;
-  color: #a8b2d1;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: 1.5px;
   position: sticky;
   top: 0;
-  background: rgba(15, 32, 39, 0.95);
+  background: rgba(12, 25, 41, 0.95);
   backdrop-filter: blur(10px);
   z-index: 10;
 }
 
+.checkbox-th, .status-th {
+  width: 60px;
+}
+
 .modern-table .table-row {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .modern-table .table-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .modern-table .table-row.selected {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.modern-table .table-row.unread {
+  background: rgba(255, 197, 61, 0.04);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.unread {
+  background: #ffc53d;
+  box-shadow: 0 0 8px rgba(255, 197, 61, 0.5);
+}
+
+.status-dot.read {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.task-id {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.intensity-badge {
+  display: inline-block;
+  padding: 4px 10px;
   background: rgba(102, 126, 234, 0.2);
+  color: #818cf8;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .checkbox-all,
@@ -345,112 +538,168 @@ onMounted(() => {
 
 .empty-state {
   text-align: center;
-  padding: 40px !important;
-  color: #8892b0;
+  padding: 60px 40px !important;
+  color: rgba(255, 255, 255, 0.3);
 }
 
-/* 按钮设计 */
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
 }
 
-.back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
   padding: 10px 20px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.view-btn {
-  background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
-  color: #000;
-  padding: 8px 16px;
-  font-size: 0.85rem;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 4px 15px rgba(0, 201, 255, 0.3);
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
 }
 
-.view-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 201, 255, 0.5);
+.btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.delete-btn {
-  background: linear-gradient(90deg, #ff6b6b, #ee5253);
-  color: #fff;
-  padding: 8px 16px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-left: 8px;
-  box-shadow: 0 4px 15px rgba(238, 82, 83, 0.3);
+.btn-primary {
+  background: rgba(102, 126, 234, 0.8);
+  color: white;
+  border-color: transparent;
 }
 
-.delete-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(238, 82, 83, 0.5);
+.btn-primary:hover {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-/* 模态框设计 */
+.btn-danger {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.8), rgba(238, 82, 83, 0.8));
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-small {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   width: 90%;
-  max-width: 1000px;
+  max-width: 900px;
   max-height: 85vh;
   overflow: hidden;
-  position: relative;
-  animation: slideUp 0.4s ease;
+  animation: slideUp 0.3s ease;
 }
 
-.modal-content h3 {
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-icon {
+  font-size: 24px;
+}
+
+.modal-header h3 {
   margin: 0;
-  padding-right: 40px;
-  font-size: 1.3rem;
-  color: #fff;
+  flex: 1;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 24px;
   padding: 5px 12px;
   line-height: 1;
   border-radius: 50%;
   transition: all 0.3s ease;
+  border: none;
 }
 
 .close-btn:hover {
-  color: #ff4d4f;
-  background: rgba(255, 77, 79, 0.2);
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
   transform: rotate(90deg);
 }
 
-.details-table-container {
-  margin-top: 25px;
-  max-height: calc(85vh - 120px);
+.modal-body {
+  padding: 24px;
+  max-height: calc(85vh - 140px);
   overflow-y: auto;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.details-table-container {
+  margin-top: 10px;
 }
 
 .details-table {
@@ -458,18 +707,29 @@ button {
 }
 
 .details-table th {
-  color: #00C9FF;
-  background: rgba(0, 201, 255, 0.1);
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
 }
 
-/* 动画 */
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: right;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

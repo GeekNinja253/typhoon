@@ -1,8 +1,15 @@
 <template>
   <div class="alert-report">
+    <div class="bg-animation"></div>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
     <div class="page-header">
-      <button class="back-btn" @click="goBack">← 返回</button>
-      <h2>预警报告管理</h2>
+      <button class="back-btn" @click="goBack">
+        <span class="back-icon">←</span>
+        <span>返回首页</span>
+      </button>
+      <h2>🌪 预警报告管理</h2>
     </div>
 
     <div class="main-content">
@@ -53,26 +60,25 @@
         </div>
 
         <!-- 已订阅列表 -->
-        <div class="panel-card">
+        <div class="panel-card clickable-card" @click="openSubscriptionModal">
           <h3 class="card-title">已订阅列表</h3>
+          <div class="card-summary">
+            <span class="summary-count">{{ subscriptions.length }} 个订阅</span>
+            <span class="summary-hint">点击查看详情 →</span>
+          </div>
           <div v-if="subscriptions.length === 0" class="empty-state">
             <p>暂无订阅</p>
           </div>
           <div v-else class="subscription-list">
-            <div v-for="sub in subscriptions" :key="sub.id" class="subscription-item">
+            <div v-for="sub in subscriptions.slice(0, 3)" :key="sub.id" class="subscription-item">
               <div class="sub-info">
                 <span class="sub-city">{{ sub.cityName || '自定义位置' }}</span>
-                <span class="sub-coord">{{ sub.latitude?.toFixed(4) }}, {{ sub.longitude?.toFixed(4) }}</span>
+                <span class="status-dot" :class="sub.status === 1 ? 'active' : 'inactive'"></span>
               </div>
               <div class="sub-time">{{ formatDateTime(sub.startTime) }} ~ {{ formatDateTime(sub.endTime) }}</div>
-              <div class="sub-actions">
-                <button class="btn btn-small" :class="sub.status === 1 ? 'btn-warning' : 'btn-primary'"
-                        @click="toggleSubscription(sub.id, sub.status)">
-                  {{ sub.status === 1 ? '停用' : '启用' }}
-                </button>
-                <button class="btn btn-small btn-edit" @click="openEditModal(sub)">修改</button>
-                <button class="btn btn-small btn-danger" @click="deleteSubscription(sub.id)">删除</button>
-              </div>
+            </div>
+            <div v-if="subscriptions.length > 3" class="more-hint">
+              还有 {{ subscriptions.length - 3 }} 个订阅...
             </div>
           </div>
         </div>
@@ -80,55 +86,36 @@
 
       <!-- 右侧：预警记录 -->
       <div class="right-panel">
-        <div class="panel-card">
+        <div class="panel-card clickable-card" @click="openReportModal">
           <div class="card-header">
             <h3 class="card-title">预警记录</h3>
             <div class="header-actions">
               <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }} 条未读</span>
-              <button v-if="!isBatchMode && reports.length > 0" class="btn btn-small" @click="enterBatchMode">批量管理</button>
-              <template v-else-if="isBatchMode">
-                <button class="btn btn-small" @click="exitBatchMode">取消</button>
-                <button class="btn btn-small btn-danger" @click="batchDelete" :disabled="selectedReports.length === 0">
-                  批量删除 ({{ selectedReports.length }})
-                </button>
-              </template>
             </div>
           </div>
-          
+          <div class="card-summary">
+            <span class="summary-count">{{ reports.length }} 条记录</span>
+            <span class="summary-hint">点击查看详情 →</span>
+          </div>
           <div v-if="reports.length === 0" class="empty-state">
             <p>暂无预警记录</p>
           </div>
           <div v-else class="report-list">
-            <div v-if="isBatchMode" class="batch-select-all">
-              <label class="checkbox-label">
-                <input type="checkbox" :checked="selectedReports.length === reports.length && reports.length > 0" 
-                       :indeterminate="selectedReports.length > 0 && selectedReports.length < reports.length"
-                       @change="toggleSelectAll" />
-                全选
-              </label>
-            </div>
-            <div v-for="report in reports" :key="report.id" 
-                 class="report-item" :class="{ unread: report.status === 0, selected: isBatchMode && selectedReports.includes(report.id) }"
-                 @click="viewReport(report)">
-              <div v-if="isBatchMode" class="report-checkbox">
-                <input type="checkbox" :checked="selectedReports.includes(report.id)" 
-                       @click.stop="toggleSelect(report.id)" />
-              </div>
+            <div v-for="report in reports.slice(0, 3)" :key="report.id" class="report-item">
               <div class="report-content">
                 <div class="report-header">
-                  <span class="level-badge level-{{ report.level }}">{{ report.level }}级预警</span>
+                  <span class="level-badge level-{{ report.level }}">{{ report.level }}级</span>
                   <span class="report-time">{{ formatDateTime(report.createTime) }}</span>
                 </div>
                 <div class="report-city">{{ report.cityName || '未知位置' }}</div>
-                <div class="report-preview">{{ report.message.substring(0, 50) }}...</div>
                 <div class="report-meta">
                   <span>距离: {{ report.distance }} km</span>
+                  <span class="status-dot" :class="report.status === 0 ? 'unread' : 'read'"></span>
                 </div>
               </div>
-              <div v-if="!isBatchMode" class="report-actions">
-                <button class="btn btn-small btn-analysis" @click.stop="goAnalysis(report)">详细分析</button>
-                <button class="btn btn-small btn-danger" @click.stop="deleteReport(report.id)">删除</button>
-              </div>
+            </div>
+            <div v-if="reports.length > 3" class="more-hint">
+              还有 {{ reports.length - 3 }} 条记录...
             </div>
           </div>
         </div>
@@ -136,7 +123,7 @@
     </div>
 
     <!-- 预警详情弹窗 -->
-    <div v-if="selectedReport" class="modal-overlay" @click="closeModal">
+    <div v-if="selectedReport" class="modal-overlay modal-overlay-top" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <span class="level-badge level-{{ selectedReport.level }}">{{ selectedReport.level }}级风圈预警</span>
@@ -219,6 +206,34 @@
         </div>
       </div>
     </div>
+
+    <!-- 订阅列表弹窗 -->
+    <SubscriptionModal
+      :visible="subscriptionModalVisible"
+      :subscriptions="subscriptions"
+      @close="closeSubscriptionModal"
+      @toggle="toggleSubscription"
+      @edit="openEditModal"
+      @delete="deleteSubscription"
+    />
+
+    <!-- 预警记录弹窗 -->
+    <ReportModal
+      :visible="reportModalVisible"
+      :reports="reports"
+      :unread-count="unreadCount"
+      :is-batch-mode="isBatchMode"
+      :selected-reports="selectedReports"
+      @close="closeReportModal"
+      @enter-batch-mode="enterBatchMode"
+      @exit-batch-mode="exitBatchMode"
+      @batch-delete="batchDelete"
+      @toggle-select-all="toggleSelectAll"
+      @toggle-select="toggleSelect"
+      @go-analysis="goAnalysis"
+      @view-report="viewReport"
+      @delete-report="deleteReport"
+    />
   </div>
 </template>
 
@@ -226,6 +241,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SubscriptionModal from '@/components/SubscriptionModal.vue';
+import ReportModal from '@/components/ReportModal.vue';
 
 const router = useRouter();
 const cities = ref<any[]>([]);
@@ -233,6 +250,9 @@ const subscriptions = ref<any[]>([]);
 const reports = ref<any[]>([]);
 const unreadCount = ref(0);
 const selectedReport = ref<any>(null);
+
+const subscriptionModalVisible = ref(false);
+const reportModalVisible = ref(false);
 
 const formData = ref({
   cityName: '',
@@ -275,6 +295,26 @@ function enterBatchMode() {
 function exitBatchMode() {
   isBatchMode.value = false;
   selectedReports.value = [];
+}
+
+// 打开订阅列表弹窗
+function openSubscriptionModal() {
+  subscriptionModalVisible.value = true;
+}
+
+// 关闭订阅列表弹窗
+function closeSubscriptionModal() {
+  subscriptionModalVisible.value = false;
+}
+
+// 打开预警记录弹窗
+function openReportModal() {
+  reportModalVisible.value = true;
+}
+
+// 关闭预警记录弹窗
+function closeReportModal() {
+  reportModalVisible.value = false;
 }
 
 // 全选/取消全选
@@ -538,39 +578,117 @@ function goAnalysis(report: any) {
 <style scoped>
 .alert-report {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #0f2027 100%);
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 201, 255, 0.1) 0%, transparent 50%);
+  animation: bgPulse 20s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes bgPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.blob-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  top: -200px;
+  left: -100px;
+  animation: blobMove1 15s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #00C9FF, #92FE9D);
+  bottom: -100px;
+  right: -100px;
+  animation: blobMove2 12s ease-in-out infinite;
+}
+
+@keyframes blobMove1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(100px, 50px); }
+  66% { transform: translate(50px, 100px); }
+}
+
+@keyframes blobMove2 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-80px, -60px); }
+  66% { transform: translate(-40px, -100px); }
 }
 
 .page-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .back-btn {
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .back-btn:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-3px);
+}
+
+.back-icon {
+  font-size: 16px;
 }
 
 .page-header h2 {
   margin: 0;
-  color: #1890ff;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .main-content {
   display: flex;
-  gap: 20px;
-  max-width: 1200px;
+  gap: 24px;
+  max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .left-panel, .right-panel {
@@ -578,54 +696,127 @@ function goAnalysis(report: any) {
 }
 
 .panel-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.panel-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.clickable-card {
+  cursor: pointer;
+}
+
+.clickable-card:hover {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+}
+
+.card-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-count {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.summary-hint {
+  font-size: 13px;
+  color: rgba(102, 126, 234, 0.8);
+  transition: all 0.3s ease;
+}
+
+.clickable-card:hover .summary-hint {
+  transform: translateX(5px);
+  color: #667eea;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.active {
+  background: #32cd32;
+  box-shadow: 0 0 8px rgba(50, 205, 50, 0.5);
+}
+
+.status-dot.inactive {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.more-hint {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 8px;
 }
 
 .card-title {
-  font-size: 16px;
-  margin: 0 0 16px 0;
-  color: #333;
-  border-left: 3px solid #1890ff;
-  padding-left: 8px;
+  font-size: 20px;
+  margin: 0 0 20px 0;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .unread-badge {
-  background: #ff4d4f;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
   display: block;
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .small-label {
   font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .form-group.half {
@@ -634,66 +825,92 @@ function goAnalysis(report: any) {
 
 input, select {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+input::placeholder, select::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .city-select {
-  padding: 10px;
+  padding: 14px;
 }
 
 .btn {
-  padding: 10px 20px;
-  border-radius: 4px;
-  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary {
-  background: #1890ff;
+  background: rgba(102, 126, 234, 0.8);
   color: white;
 }
 
 .btn-primary:hover {
-  background: #40a9ff;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-warning {
-  background: #faad14;
-  color: white;
+  background: rgba(255, 197, 61, 0.2);
+  color: #ffc53d;
+  border: 1px solid rgba(255, 197, 61, 0.4);
 }
 
 .btn-warning:hover {
-  background: #ffc53d;
-  transform: translateY(-1px);
+  background: rgba(255, 197, 61, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 197, 61, 0.3);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ff6b6b, #ee5253);
-  color: white;
-  border: none;
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
 }
 
 .btn-danger:hover {
-  background: linear-gradient(135deg, #ee5253, #ff6b6b);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.8), rgba(238, 82, 83, 0.8));
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
 }
 
 .btn-edit {
-  background: #fff;
-  color: #1890ff;
-  border: 1px solid #1890ff;
+  background: rgba(0, 201, 255, 0.1);
+  color: #00C9FF;
+  border: 1px solid rgba(0, 201, 255, 0.3);
 }
 
 .btn-edit:hover {
-  background: #1890ff;
-  color: white;
-  transform: translateY(-1px);
+  background: rgba(0, 201, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 201, 255, 0.3);
 }
 
 .btn-analysis {
@@ -704,122 +921,163 @@ input, select {
 
 .btn-analysis:hover {
   background: linear-gradient(135deg, #764ba2, #667eea);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
 }
 
 .btn-small {
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 13px;
 }
 
 .empty-state {
-  padding: 40px;
+  padding: 60px 40px;
   text-align: center;
-  color: #999;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.empty-state p {
+  font-size: 15px;
 }
 
 .subscription-list {
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
 }
 
 .subscription-item {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
 .subscription-item:last-child {
   border-bottom: none;
 }
 
+.subscription-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin: 0 -8px;
+  padding: 16px 24px;
+}
+
 .sub-info {
   display: flex;
   gap: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .sub-city {
   font-weight: 600;
-  color: #333;
+  color: #fff;
+  font-size: 16px;
 }
 
 .sub-coord {
-  font-size: 12px;
-  color: #999;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .sub-time {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
 }
 
 .sub-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .report-list {
-  max-height: 500px;
+  max-height: 550px;
   overflow-y: auto;
 }
 
+.report-list::-webkit-scrollbar,
+.subscription-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.report-list::-webkit-scrollbar-track,
+.subscription-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.report-list::-webkit-scrollbar-thumb,
+.subscription-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.report-list::-webkit-scrollbar-thumb:hover,
+.subscription-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .batch-select-all {
-  padding: 8px 12px;
-  background: #f5f5f5;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
   cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: #667eea;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .report-item {
-  padding: 14px;
-  padding-bottom: 42px;
-  padding-left: 42px;
-  border-radius: 6px;
-  background: #fafafa;
-  margin-bottom: 10px;
+  padding: 18px;
+  padding-bottom: 48px;
+  padding-left: 48px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .report-item:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .report-item.unread {
-  background: #fff7e6;
-  border-left: 3px solid #faad14;
+  background: rgba(255, 197, 61, 0.1);
+  border-left: 4px solid #ffc53d;
 }
 
 .report-item.selected {
-  background: #e6f7ff;
-  border: 1px solid #1890ff;
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(102, 126, 234, 0.4);
 }
 
 .report-checkbox {
   position: absolute;
-  left: 14px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -828,6 +1086,7 @@ input, select {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: #667eea;
 }
 
 .report-content {
@@ -836,8 +1095,8 @@ input, select {
 
 .report-actions {
   position: absolute;
-  right: 14px;
-  bottom: 14px;
+  right: 18px;
+  bottom: 18px;
   display: flex;
   gap: 16px;
 }
@@ -846,51 +1105,56 @@ input, select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .level-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .level-badge.level-7 {
-  background: #95de64;
-  color: #1890ff;
+  background: rgba(50, 205, 50, 0.2);
+  color: #32cd32;
+  border: 1px solid rgba(50, 205, 50, 0.3);
 }
 
 .level-badge.level-10 {
-  background: #ffc53d;
-  color: #d46b08;
+  background: rgba(255, 197, 61, 0.2);
+  color: #ffc53d;
+  border: 1px solid rgba(255, 197, 61, 0.3);
 }
 
 .level-badge.level-12 {
-  background: #ff7875;
-  color: #fff;
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 .report-time {
-  font-size: 12px;
-  color: #999;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .report-city {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  color: #fff;
 }
 
 .report-preview {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+  line-height: 1.5;
 }
 
 .report-meta {
-  font-size: 12px;
-  color: #999;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* 弹窗样式 */
@@ -900,63 +1164,119 @@ input, select {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay-top {
+  z-index: 2000;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
-  background: white;
-  border-radius: 8px;
-  width: 500px;
-  max-height: 80vh;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 550px;
+  max-height: 85vh;
   overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .close-btn {
-  font-size: 24px;
+  font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  color: #666;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .modal-body {
-  padding: 20px;
-  max-height: 400px;
+  padding: 24px;
+  max-height: 450px;
   overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 .modal-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
-  font-size: 13px;
-  color: #666;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .message-content {
   white-space: pre-wrap;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.8;
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .message-content pre {
@@ -968,8 +1288,8 @@ input, select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-top: 1px solid #eee;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-footer-left {

@@ -9,6 +9,9 @@ type TyphoonPoint = {
   time: number
   grade: number
   isFuture: boolean
+  longitude?: number
+  lon?: number
+  latitude?: number
 }
 
 const mapContainer = ref<HTMLElement | null>(null)
@@ -61,7 +64,12 @@ function initCesium() {
   // 关闭高耗能的大气渲染
   viewer.scene.globe.enableLighting = false
   viewer.scene.fog.enabled = false
-  viewer.scene.skyAtmosphere.show = false
+  if (viewer.scene.skyAtmosphere) {
+    viewer.scene.skyAtmosphere.show = false
+  }
+  if (viewer.scene.skyBox) {
+    viewer.scene.skyBox.show = false
+  }
 
   // 监听地图点击事件：点击地球上的某点，平滑转动并下降（聚焦拉近细节），不再转为 2D
   const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
@@ -182,8 +190,8 @@ function loadRealPath(data: any[]) {
   playAnimation(3000)
   if (allPoints.length > 0) {
     const targetPoint = allPoints[0]
-    const targetLng = targetPoint.lng || targetPoint.longitude || targetPoint.lon
-    const targetLat = targetPoint.lat || targetPoint.latitude
+    const targetLng = targetPoint.lng ?? targetPoint.longitude ?? targetPoint.lon ?? 0
+    const targetLat = targetPoint.lat ?? targetPoint.latitude ?? 0
     v.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(
         targetLng,
@@ -201,14 +209,9 @@ function loadRealPath(data: any[]) {
 }
 
 /* ---------------- 生成预测台风数据 ---------------- */
-function loadPredictedPath(data: any, pathPoints: any[]) {
+function loadPredictedPath(_data: any, pathPoints: any[]) {
   if (!viewer) return
   clearMap()
-
-  const startLat = data.latitude
-  const startLng = data.longitude
-  const grade = data.grade || 12
-  const startTime = new Date(data.startTime)
 
   allPoints = pathPoints.map(p => ({
     lat: p.lat,
@@ -264,8 +267,8 @@ function loadPredictedPath(data: any, pathPoints: any[]) {
   playAnimation(3000)
   if (allPoints.length > 0) {
     const targetPoint = allPoints[0]
-    const targetLng = targetPoint.lng || targetPoint.longitude || targetPoint.lon
-    const targetLat = targetPoint.lat || targetPoint.latitude
+    const targetLng = targetPoint.lng ?? targetPoint.longitude ?? targetPoint.lon ?? 0
+    const targetLat = targetPoint.lat ?? targetPoint.latitude ?? 0
     v.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(
         targetLng,
