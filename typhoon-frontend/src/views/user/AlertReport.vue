@@ -277,9 +277,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import SubscriptionModal from '@/components/SubscriptionModal.vue';
-import ReportModal from '@/components/ReportModal.vue';
-import AddSubscriptionModal from '@/components/AddSubscriptionModal.vue';
+import SubscriptionModal from '@/components/WarningBroadcast/SubscriptionModal.vue';
+import ReportModal from '@/components/WarningBroadcast/ReportModal.vue';
+import AddSubscriptionModal from '@/components/WarningBroadcast/AddSubscriptionModal.vue';
 
 const router = useRouter();
 const cities = ref<any[]>([]);

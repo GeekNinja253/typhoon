@@ -89,9 +89,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import MapContainer from "../../components/MapContainer.vue";
-import TimelinePlayer from "../../components/TimelinePlayer.vue";
-import ControlPanel from "../../components/ControlPanel.vue";
+import MapContainer from "../../components/GISMap/MapContainer.vue";
+import TimelinePlayer from "../../components/GISMap/TimelinePlayer.vue";
+import ControlPanel from "../../components/GISMap/ControlPanel.vue";
 import { getTyphoonPath } from "../../api/typhoon";
 import axios from "axios";
 

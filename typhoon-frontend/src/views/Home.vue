@@ -354,8 +354,8 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import ReportModal from '../components/ReportModal.vue';
-import SubscriptionModal from '../components/SubscriptionModal.vue';
+import ReportModal from '../components/WarningBroadcast/ReportModal.vue';
+import SubscriptionModal from '../components/WarningBroadcast/SubscriptionModal.vue';
 
 const router = useRouter();
 
