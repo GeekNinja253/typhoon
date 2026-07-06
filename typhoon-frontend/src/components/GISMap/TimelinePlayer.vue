@@ -154,15 +154,15 @@ onBeforeUnmount(() => {
 
   padding: 16px 28px;
 
-  background: rgba(255,255,255,.95);
+  background: rgba(12, 25, 41, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
 
   box-shadow:
-    0 8px 32px rgba(0,0,0,.2);
+    0 8px 32px rgba(0,0,0,.3);
 
   z-index: 1000;
 }
@@ -177,17 +177,12 @@ onBeforeUnmount(() => {
 
 .play-btn {
   border: none;
-
   color: white;
-
   cursor: pointer;
-
   padding: 8px 20px;
-
   border-radius: 8px;
-
   font-weight: 600;
-
+  transition: all 0.3s ease;
   background:
     linear-gradient(
       135deg,
@@ -196,80 +191,61 @@ onBeforeUnmount(() => {
     );
 }
 
+.play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 .time-display {
-  color: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: 600;
+  font-size: 14px;
 }
 
 .timeline {
   position: relative;
-
   height: 28px;
 }
 
-/* 灰色轨道 */
-
 .track {
   position: absolute;
-
   left: 0;
   right: 0;
-
   top: 50%;
-
   transform: translateY(-50%);
-
   height: 4px;
-
-  background: #d9d9d9;
-
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
 }
-
-/* 蓝色进度 */
 
 .progress {
   position: absolute;
-
   left: 0;
-
   top: 50%;
-
   transform: translateY(-50%);
-
   height: 4px;
-
-  background: #667eea;
-
+  background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 2px;
 }
 
-/* 节点层 */
-
 .ticks {
   position: absolute;
-
   inset: 0;
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
 }
 
 .tick {
   width: 10px;
   height: 10px;
-
   border-radius: 50%;
-
-  background: #bfbfbf;
-
+  background: rgba(255, 255, 255, 0.2);
   cursor: pointer;
-
   z-index: 3;
-
   transition: .2s;
 }
 
@@ -279,25 +255,17 @@ onBeforeUnmount(() => {
 
 .tick.current {
   transform: scale(1.5);
-
   box-shadow:
     0 0 10px rgba(102,126,234,.6);
 }
 
-/* 透明 slider */
-
 .slider {
   position: absolute;
-
   inset: 0;
-
   width: 100%;
   height: 100%;
-
   opacity: 0;
-
   cursor: pointer;
-
   z-index: 4;
 }
 </style>

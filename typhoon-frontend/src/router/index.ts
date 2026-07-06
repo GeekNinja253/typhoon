@@ -3,9 +3,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
 import Home from "../views/Home/index.vue";
-import MapView from "../views/user/MapView.vue";
-import AlertReport from "../views/user/AlertReport.vue";
-import AdminHome from "../views/admin/AdminHome.vue";
+import MapView from "../views/MapView/index.vue";
+import AlertReport from "../views/AlertReport/index.vue";
+
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -16,10 +16,9 @@ const routes = [
   { path: "/home", component: Home, meta: { requiresAuth: true } },
 
   { path: "/map", component: MapView, meta: { requiresAuth: true } },
-  { path: "/history", component: () => import("../views/user/HistoryView.vue"), meta: { requiresAuth: true } },
+  { path: "/history", component: () => import("../views/HistoryView/index.vue"), meta: { requiresAuth: true } },
   { path: "/alert", component: AlertReport, meta: { requiresAuth: true } },
-  { path: "/analysis/:id", component: () => import("../views/user/AnalysisView.vue"), meta: { requiresAuth: true } },
-  { path: "/admin", component: AdminHome, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: "/analysis/:id", component: () => import("../views/AlertReport/AnalysisView.vue"), meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

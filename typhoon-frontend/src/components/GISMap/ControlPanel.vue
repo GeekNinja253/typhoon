@@ -202,28 +202,31 @@ function setHoursMax() {
   padding: 20px;
   overflow-y: auto;
   height: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 25, 41, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header {
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 16px;
 }
 
 .header h2 {
   font-size: 18px;
-  color: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 4px;
   font-weight: 700;
 }
 
 .subtitle {
   font-size: 12px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .panel-section {
@@ -233,7 +236,7 @@ function setHoursMax() {
 .panel-section h3 {
   font-size: 14px;
   margin-bottom: 12px;
-  color: #333;
+  color: rgba(255, 255, 255, 0.8);
   border-left: 3px solid #667eea;
   padding-left: 8px;
   font-weight: 600;
@@ -258,25 +261,29 @@ function setHoursMax() {
 
 label {
   font-size: 12px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 input, select {
   padding: 10px 14px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   font-size: 13px;
   outline: none;
-  color: #333;
-  background: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .input-info {
   padding: 10px 14px;
   font-size: 12px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   background: rgba(102, 126, 234, 0.1);
   border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 8px;
@@ -291,15 +298,15 @@ input:focus, select:focus {
   width: 100%;
   padding: 10px 32px 10px 12px;
   appearance: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .typhoon-select:hover {
   border-color: #667eea;
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .typhoon-select:focus {
@@ -307,24 +314,9 @@ input:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
-.btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.btn-small {
-  padding: 4px 10px;
+.typhoon-select option {
+  background: #1a365d;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .panel-actions {
@@ -333,7 +325,16 @@ input:focus, select:focus {
   gap: 12px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-primary {
@@ -352,16 +353,16 @@ input:focus, select:focus {
 }
 
 .btn-danger {
-  background: rgba(255, 107, 107, 0.2);
+  background: rgba(255, 107, 107, 0.15);
   color: #ff6b6b;
   border: 1px solid rgba(255, 107, 107, 0.3);
   font-weight: 600;
   transition: all 0.3s ease;
 }
 .btn-danger:hover {
-  background: rgba(255, 107, 107, 0.3);
+  background: rgba(255, 107, 107, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
 }
 
 .duration-control {
@@ -370,19 +371,17 @@ input:focus, select:focus {
   gap: 8px;
 }
 
-
-
 .quick-btn {
   width: 100%;
   text-align: center;
   padding: 6px 10px;
   font-size: 11px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .quick-btn:hover {
@@ -404,7 +403,7 @@ input:focus, select:focus {
 .legend-section h3 {
   font-size: 13px;
   margin-bottom: 10px;
-  color: #333;
+  color: rgba(255, 255, 255, 0.7);
   border-left: 3px solid #667eea;
   padding-left: 8px;
   font-weight: 600;
@@ -416,7 +415,7 @@ input:focus, select:focus {
   gap: 8px;
   font-size: 12px;
   margin-bottom: 6px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .circle {
@@ -436,7 +435,7 @@ input:focus, select:focus {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   user-select: none;
 }
@@ -447,35 +446,23 @@ input:focus, select:focus {
 
 .quick-hours {
   position: absolute;
-
   top: 100%;
   left: 0;
-
   min-width: 140px;
-
   display: flex;
   flex-direction: column;
-
   gap: 6px;
-
   padding: 10px;
-
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: rgba(12, 25, 41, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 9999;
-
   opacity: 0;
   visibility: hidden;
-
   transform: translateY(-5px);
-
   transition: all 0.2s ease;
 }
 
