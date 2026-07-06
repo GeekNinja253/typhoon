@@ -92,7 +92,6 @@ import { useRouter } from "vue-router";
 import MapContainer from "../../components/GISMap/MapContainer.vue";
 import TimelinePlayer from "../../components/GISMap/TimelinePlayer.vue";
 import ControlPanel from "../../components/GISMap/ControlPanel.vue";
-import { getTyphoonPath } from "../../api/typhoon.ts";
 import axios from "axios";
 import '@/styles/mapview.css'
 
@@ -133,19 +132,6 @@ const affectedArea = computed(() => {
   }
   return "-";
 });
-
-async function loadTyphoon(id: number) {
-  try {
-    const res = await getTyphoonPath(id);
-    frames.value = res.data.data;
-    if (frames.value.length > 0) currentFrame.value = frames.value[0];
-
-    mapRef.value.loadRealPath(res.data.data);
-    mapRef.value.renderFrame(0);
-  } catch (error) {
-    console.error("Failed to load predefined path", error);
-  }
-}
 
 function onClear() {
   frames.value = [];
@@ -263,47 +249,6 @@ function closeAlertModal() {
   showAlertModal.value = false;
 }
 
-function goToAnalysis() {
-  // 保存当前的实时数据到sessionStorage
-  const analysisData = {
-    // 基本信息
-    id: 0,
-    level: currentFrame.value?.grade || 12,
-    cityName: '当前预测位置',
-    latitude: currentFrame.value?.lat || 0,
-    longitude: currentFrame.value?.longitude || currentFrame.value?.lon || 0,
-    distance: 0,
-    createTime: new Date(currentFrame.value?.time || Date.now()).toISOString(),
-    triggerTime: null,
-    // 实时数据
-    typhoonLat: currentFrame.value?.lat || 0,
-    typhoonLng: currentFrame.value?.longitude || currentFrame.value?.lon || 0,
-    grade: currentFrame.value?.grade || 12,
-    windSpeed: currentFrame.value?.windSpeed || 0,
-    pressure: currentFrame.value?.pressure || 1000,
-    // 风圈数据
-    windRadius7: currentFrame.value?.grade >= 7 ? Math.round((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000) : 0,
-    windRadius10: currentFrame.value?.grade >= 10 ? Math.round((80000 + Math.max(0, (currentFrame.value?.grade || 0) - 10) * 12000) / 1000) : 0,
-    windRadius12: currentFrame.value?.grade >= 12 ? Math.round((40000 + Math.max(0, (currentFrame.value?.grade || 0) - 12) * 10000) / 1000) : 0,
-    affectedArea: currentFrame.value?.grade >= 7 ? Math.round(Math.PI * Math.pow((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000, 2)) : 0,
-    // 完整帧数据
-    frames: frames.value,
-    message: `台风实时监测数据：
-- 经度: ${(currentFrame.value?.longitude || currentFrame.value?.lon || 0).toFixed(2)}°
-- 纬度: ${(currentFrame.value?.lat || 0).toFixed(2)}°
-- 风力等级: ${currentFrame.value?.grade || 0}级
-- 风速: ${(currentFrame.value?.windSpeed || 0).toFixed(1)} m/s
-- 中心气压: ${(currentFrame.value?.pressure || 0).toFixed(0)} hPa
-- 7级风圈: ${currentFrame.value?.grade >= 7 ? Math.round((150000 + Math.max(0, (currentFrame.value?.grade || 0) - 7) * 15000) / 1000) : 0} km
-- 10级风圈: ${currentFrame.value?.grade >= 10 ? Math.round((80000 + Math.max(0, (currentFrame.value?.grade || 0) - 10) * 12000) / 1000) : 0} km
-- 12级风圈: ${currentFrame.value?.grade >= 12 ? Math.round((40000 + Math.max(0, (currentFrame.value?.grade || 0) - 12) * 10000) / 1000) : 0} km`
-  };
-  
-  sessionStorage.setItem('currentAnalysis', JSON.stringify(analysisData));
-  router.push('/analysis/0');
-}
-
-// 从预警弹窗跳转详细分析
 function goToAnalysisFromAlert(alert: any) {
   const analysisData = {
     // 基本信息（使用预警数据中的订阅地址信息）
