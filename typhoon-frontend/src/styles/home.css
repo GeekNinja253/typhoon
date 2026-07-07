@@ -99,7 +99,6 @@
 
 .logo-icon {
   font-size: 48px;
-  animation: logoSpin 8s linear infinite;
 }
 
 @keyframes logoSpin {

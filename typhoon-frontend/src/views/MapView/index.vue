@@ -5,8 +5,15 @@
     </div>
 
     <div class="main">
+      <div class="page-header">
+        <div class="header-left">
+          <h2>🌪 台风路径分析系统</h2>
+        </div>
+        <div class="header-actions">
+          <button class="btn" @click="goBack">← 返回首页</button>
+        </div>
+      </div>
       <div class="map-box">
-        <button class="back-btn" @click="goBack">← 返回</button>
         <MapContainer ref="mapRef" tk="3c848acf588261378c0dd00571a01fb5" />
 
         <div v-if="currentFrame" class="info-overlay">
@@ -300,6 +307,51 @@ function formatDateTime(dateStr: string) {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #0f2027 100%);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-left h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .map-box {

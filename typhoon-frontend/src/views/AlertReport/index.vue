@@ -5,11 +5,12 @@
     <div class="bg-blob blob-2"></div>
 
     <div class="page-header">
-      <button class="back-btn" @click="goBack">
-        <span class="back-icon">←</span>
-        <span>返回首页</span>
-      </button>
-      <h2>🌪 预警报告管理</h2>
+      <div class="header-left">
+        <h2>🌪 预警报告管理</h2>
+      </div>
+      <div class="header-actions">
+        <button class="btn" @click="goBack">← 返回首页</button>
+      </div>
     </div>
 
     <div class="stats-section">
@@ -669,34 +670,25 @@ function goAnalysis(report: any) {
 .page-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
   margin-bottom: 32px;
   position: relative;
   z-index: 1;
 }
 
-.back-btn {
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  cursor: pointer;
-  color: #fff;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  gap: 12px;
 }
 
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(-3px);
-}
 
-.back-icon {
-  font-size: 16px;
-}
 
 .page-header h2 {
   margin: 0;
